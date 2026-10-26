@@ -50,16 +50,22 @@ jobs:
       - name: Create GitHub Release with APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: NutriStep AI v1.0.0 for Pixel 7 (Direct APK)
+          tag_name: v1.1.0
+          name: NutriStep AI v1.1.0 - Big Text & Graphical Edition (Pixel 7)
           body: |
-            ## 📱 NutriStep AI Android APK (Pixel 7 Ready)
+            ## 📱 NutriStep AI v1.1.0 (Pixel 7 Ready)
             
-            ### How to Install on Pixel 7:
+            ### ✨ What's New in this Update:
+            - **Big Text & High Contrast:** Extra-large fonts, giant calorie meters, and clear numbers that are easy to read from a distance.
+            - **Ultra-Graphical & Low-Literacy Friendly:** Universal emojis (🍳 Breakfast, 🥗 Lunch, 🍲 Dinner, 🍎 Snacks, 👟 Steps, 💧 Water), traffic-light indicators (🟢 Green = On Track, 🔴 Red = Over limit).
+            - **🔊 Voice Readout / Text-to-Speech:** Tap the "🔊 Hear Status" button anywhere to listen to your daily calories, meal summaries, and step count spoken aloud!
+            - **Giant 1-Tap Navigation Bar:** Easy-to-tap 64px camera snap button and colorful bottom tabs.
+            
+            ### 📲 How to Install the Update on Pixel 7:
             1. Tap **`app-debug.apk`** below to download directly to your phone.
-            2. Tap the downloaded file in your notifications or Downloads folder.
-            3. Tap **Install** (if prompted, allow install from your browser).
-            4. Open NutriStep AI and start logging meals with Gemini Computer Vision and tracking steps!
+            2. Tap the downloaded file in your browser notifications or Downloads folder.
+            3. Tap **Update / Install**.
+            4. Open NutriStep AI!
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

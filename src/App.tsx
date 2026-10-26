@@ -86,6 +86,13 @@ export default function App() {
   // Real dynamic streak computation based on dual goals (Calories & Steps)
   const streakInfo = calculateStreakInfo(history, profile);
   const targetCalories = calculateTargetCalories(profile);
+  const netRemaining = targetCalories - caloriesConsumed + todayLog.caloriesBurned;
+  const speechSummary = `Hello ${profile.name.split(' ')[0]}! You are on a ${
+    streakInfo.currentStreak
+  } day streak. You have ${Math.max(
+    0,
+    netRemaining
+  )} calories remaining to eat today, and you took ${todayLog.steps.toLocaleString()} steps. Tap the big green camera button to take a picture of your food!`;
 
   // Handlers
   const handleMealLogged = (newMeal: LoggedMeal) => {
@@ -173,6 +180,7 @@ export default function App() {
         profile={profile}
         streakDays={streakInfo.currentStreak}
         streakInfo={streakInfo}
+        speechSummary={speechSummary}
         onOpenStreakModal={() => setIsStreakModalOpen(true)}
         onOpenPlateScanner={() => openPlateScannerForType('Lunch')}
         onOpenCoach={() => setIsCoachOpen(true)}
@@ -183,44 +191,44 @@ export default function App() {
         }}
       />
 
-      {/* Primary Sub-Nav Bar */}
-      <div className="bg-slate-900/60 border-b border-slate-800/80 px-4 lg:px-8 py-2">
+      {/* Primary Sub-Nav Bar - Large & Clear */}
+      <div className="bg-slate-900/90 border-b border-slate-800 px-4 lg:px-8 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setCurrentView('dashboard')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm sm:text-base font-black transition-all cursor-pointer shadow-sm ${
                 currentView === 'dashboard'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/40 shadow-emerald-500/10'
+                  : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
               }`}
             >
-              <Flame className="w-3.5 h-3.5" />
-              <span>Net Calorie Dashboard</span>
+              <span className="text-xl">🍽️</span>
+              <span>Food &amp; Calories</span>
             </button>
 
             <button
               onClick={() => setCurrentView('movement')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm sm:text-base font-black transition-all cursor-pointer shadow-sm ${
                 currentView === 'movement'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-cyan-500/25 text-cyan-300 border-2 border-cyan-500/40 shadow-cyan-500/10'
+                  : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
               }`}
             >
-              <Footprints className="w-3.5 h-3.5" />
-              <span>Daily Step Tracker</span>
+              <span className="text-xl">👟</span>
+              <span>Daily Steps</span>
             </button>
 
             <button
               onClick={() => setCurrentView('analytics')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm sm:text-base font-black transition-all cursor-pointer shadow-sm ${
                 currentView === 'analytics'
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-purple-500/25 text-purple-300 border-2 border-purple-500/40 shadow-purple-500/10'
+                  : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
               }`}
             >
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>Weekly &amp; Monthly Trends</span>
+              <span className="text-xl">📈</span>
+              <span>Reports</span>
             </button>
           </div>
 
@@ -418,54 +426,64 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Bottom Navigation for Mobile / Tablet */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-lg border-t border-slate-800/80 px-4 py-2 sm:hidden flex items-center justify-around">
+      {/* Floating Bottom Navigation - Giant, Colorful & Intuitive for Easy Mobile Use */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t-2 border-slate-800 px-3 py-2 flex items-center justify-around shadow-2xl">
         <button
           onClick={() => setCurrentView('dashboard')}
-          className={`flex flex-col items-center gap-0.5 text-[11px] font-semibold cursor-pointer ${
-            currentView === 'dashboard' ? 'text-emerald-400' : 'text-slate-500'
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            currentView === 'dashboard'
+              ? 'text-emerald-300 font-black scale-105'
+              : 'text-slate-400 hover:text-white font-bold'
           }`}
         >
-          <Flame className="w-5 h-5" />
-          <span>Intake</span>
-        </button>
-
-        <button
-          onClick={() => openPlateScannerForType('Lunch')}
-          className="flex flex-col items-center gap-0.5 text-[11px] font-bold text-emerald-300 -mt-5 cursor-pointer"
-        >
-          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/30 text-slate-950">
-            <Camera className="w-6 h-6" />
-          </div>
-          <span className="text-[10px]">Snap Plate</span>
+          <span className="text-2xl">🍽️</span>
+          <span className="text-xs font-black">Food</span>
         </button>
 
         <button
           onClick={() => setCurrentView('movement')}
-          className={`flex flex-col items-center gap-0.5 text-[11px] font-semibold cursor-pointer ${
-            currentView === 'movement' ? 'text-cyan-400' : 'text-slate-500'
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            currentView === 'movement'
+              ? 'text-cyan-300 font-black scale-105'
+              : 'text-slate-400 hover:text-white font-bold'
           }`}
         >
-          <Footprints className="w-5 h-5" />
-          <span>Steps</span>
+          <span className="text-2xl">👟</span>
+          <span className="text-xs font-black">Steps</span>
+        </button>
+
+        {/* GIANT CENTER SNAP BUTTON */}
+        <button
+          onClick={() => openPlateScannerForType('Lunch')}
+          className="flex flex-col items-center -mt-8 cursor-pointer group active:scale-90 transition-transform"
+          title="Take photo of food plate"
+        >
+          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-400 via-teal-300 to-emerald-500 p-0.5 shadow-2xl shadow-emerald-500/60 border-4 border-slate-950 flex items-center justify-center text-slate-950">
+            <Camera className="w-8 h-8 stroke-[3]" />
+          </div>
+          <span className="text-xs font-black text-emerald-300 mt-1 uppercase tracking-wider">
+            📸 Snap
+          </span>
         </button>
 
         <button
           onClick={() => setIsCoachOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[11px] font-semibold text-purple-400 cursor-pointer"
+          className="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-purple-300 hover:text-purple-200 font-bold transition-all cursor-pointer"
         >
-          <Sparkles className="w-5 h-5" />
-          <span>AI Coach</span>
+          <span className="text-2xl">🤖</span>
+          <span className="text-xs font-black">Coach</span>
         </button>
 
         <button
           onClick={() => setCurrentView('analytics')}
-          className={`flex flex-col items-center gap-0.5 text-[11px] font-semibold cursor-pointer ${
-            currentView === 'analytics' ? 'text-indigo-400' : 'text-slate-500'
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            currentView === 'analytics'
+              ? 'text-indigo-300 font-black scale-105'
+              : 'text-slate-400 hover:text-white font-bold'
           }`}
         >
-          <BarChart3 className="w-5 h-5" />
-          <span>Trends</span>
+          <span className="text-2xl">📈</span>
+          <span className="text-xs font-black">Reports</span>
         </button>
       </nav>
 

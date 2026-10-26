@@ -17,10 +17,13 @@ import {
   Info,
   ShieldCheck,
   Zap,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LoggedMeal, MealItem, MealType, SamplePlate } from '../types';
 import { SAMPLE_PLATES } from '../data/initialData';
+import { speakText, stopSpeaking } from '../utils/speechHelper';
 
 interface PlateScannerModalProps {
   isOpen: boolean;
@@ -56,6 +59,20 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
   // Barcode state
   const [barcodeInput, setBarcodeInput] = useState<string>('737628064502'); // Example: Thai Kitchen Noodle or Nutella
   const [barcodeLoading, setBarcodeLoading] = useState<boolean>(false);
+  const [isSpeakingResult, setIsSpeakingResult] = useState<boolean>(false);
+
+  const handleSpeakAnalysis = () => {
+    if (!analysisResult) return;
+    if (isSpeakingResult) {
+      stopSpeaking();
+      setIsSpeakingResult(false);
+    } else {
+      const text = `${analysisResult.meal_name}. Estimated ${analysisResult.total_calories} calories, and ${analysisResult.total_macros.protein_g} grams of protein.`;
+      speakText(text);
+      setIsSpeakingResult(true);
+      setTimeout(() => setIsSpeakingResult(false), 7000);
+    }
+  };
 
   // Analysis result state (Module A Review & User Override)
   const [analysisResult, setAnalysisResult] = useState<{
@@ -666,31 +683,58 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                     )}
                   </div>
 
-                  {/* High level calories & macro pills */}
-                  <div className="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-slate-800/80">
-                    <div className="text-center p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                      <span className="block text-[11px] text-slate-400">Total Kcal</span>
-                      <span className="text-base sm:text-lg font-black text-amber-300">
-                        {analysisResult.total_calories}
-                      </span>
+                  {/* Giant Calories & Macros for Low Literacy Navigation */}
+                  <div className="mt-4 pt-3 border-t border-slate-800 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs uppercase font-extrabold text-slate-400 block">Total Nutrition Energy</span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-4xl sm:text-5xl font-black text-amber-300">
+                            {analysisResult.total_calories}
+                          </span>
+                          <span className="text-lg font-bold text-slate-300">Calories</span>
+                        </div>
+                      </div>
+
+                      {/* Hear Nutrition Button */}
+                      <button
+                        type="button"
+                        onClick={handleSpeakAnalysis}
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border-2 text-xs sm:text-sm font-black transition-all active:scale-95 cursor-pointer shadow-md ${
+                          isSpeakingResult
+                            ? 'bg-rose-500/30 border-rose-400 text-rose-200 animate-pulse'
+                            : 'bg-indigo-600/30 hover:bg-indigo-600/40 border-indigo-400/50 text-indigo-200'
+                        }`}
+                        title="Hear meal nutrition spoken aloud"
+                      >
+                        {isSpeakingResult ? (
+                          <VolumeX className="w-4 h-4 text-rose-300 animate-spin" />
+                        ) : (
+                          <Volume2 className="w-4 h-4 text-indigo-300 stroke-[3]" />
+                        )}
+                        <span>{isSpeakingResult ? 'Stop Voice' : '🔊 Hear Nutrition'}</span>
+                      </button>
                     </div>
-                    <div className="text-center p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                      <span className="block text-[11px] text-rose-400">Protein</span>
-                      <span className="text-base sm:text-lg font-bold text-rose-300">
-                        {analysisResult.total_macros.protein_g}g
-                      </span>
-                    </div>
-                    <div className="text-center p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                      <span className="block text-[11px] text-amber-400">Carbs</span>
-                      <span className="text-base sm:text-lg font-bold text-amber-300">
-                        {analysisResult.total_macros.carbs_g}g
-                      </span>
-                    </div>
-                    <div className="text-center p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                      <span className="block text-[11px] text-sky-400">Fat</span>
-                      <span className="text-base sm:text-lg font-bold text-sky-300">
-                        {analysisResult.total_macros.fat_g}g
-                      </span>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <span className="block text-xs font-bold text-rose-400">🥩 Protein</span>
+                        <span className="text-lg sm:text-xl font-black text-white">
+                          {analysisResult.total_macros.protein_g}g
+                        </span>
+                      </div>
+                      <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <span className="block text-xs font-bold text-amber-400">🍞 Carbs</span>
+                        <span className="text-lg sm:text-xl font-black text-white">
+                          {analysisResult.total_macros.carbs_g}g
+                        </span>
+                      </div>
+                      <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                        <span className="block text-xs font-bold text-sky-400">🥑 Fat</span>
+                        <span className="text-lg sm:text-xl font-black text-white">
+                          {analysisResult.total_macros.fat_g}g
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -812,10 +856,10 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
                 <button
                   onClick={handleConfirmAndLog}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-sm font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                  className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-slate-950 text-base sm:text-lg font-black shadow-xl shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
                 >
-                  <Check className="w-4 h-4 stroke-[3]" />
-                  <span>Log Plate to {mealType}</span>
+                  <Check className="w-6 h-6 stroke-[3]" />
+                  <span>✅ SAVE FOOD TO {mealType.toUpperCase()}</span>
                 </button>
               </div>
             </div>
@@ -823,65 +867,65 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
             /* Mode Selector Tabs */
             !isAnalyzing && (
               <div className="space-y-5">
-                {/* Tab Navigation */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1 bg-slate-950/70 border border-slate-800 rounded-xl">
+                {/* Tab Navigation - Big & Graphical */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1.5 bg-slate-950/80 border-2 border-slate-800 rounded-2xl">
                   <button
                     onClick={() => setActiveTab('samples')}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === 'samples'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Sample Plates</span>
+                    <span className="text-xl">🍲</span>
+                    <span>Sample Meals</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('camera')}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === 'camera'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <Camera className="w-3.5 h-3.5" />
+                    <span className="text-xl">📸</span>
                     <span>Live Camera</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('upload')}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === 'upload'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <Upload className="w-3.5 h-3.5" />
+                    <span className="text-xl">🖼️</span>
                     <span>Upload Photo</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('voice_text')}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === 'voice_text'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <Mic className="w-3.5 h-3.5" />
-                    <span>Voice / Text</span>
+                    <span className="text-xl">🎙️</span>
+                    <span>Speak Meal</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('barcode')}
-                    className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       activeTab === 'barcode'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    <Barcode className="w-3.5 h-3.5" />
+                    <span className="text-xl">🏷️</span>
                     <span>Barcode</span>
                   </button>
                 </div>
