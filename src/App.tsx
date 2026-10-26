@@ -21,8 +21,9 @@ import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { AiCoachDrawer } from './components/AiCoachDrawer';
 import { ProfileSettingsModal } from './components/ProfileSettingsModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { StreakCounterModal } from './components/StreakCounterModal';
 import { UserProfile, DayLog, LoggedMeal, MealType, HourlyStep } from './types';
-import { calculateStepMetrics } from './utils/healthCalculations';
+import { calculateStepMetrics, calculateStreakInfo, calculateTargetCalories } from './utils/healthCalculations';
 import {
   loadStoredProfile,
   saveStoredProfile,
@@ -45,6 +46,7 @@ export default function App() {
   const [coachInitialPrompt, setCoachInitialPrompt] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isStepModalOpen, setIsStepModalOpen] = useState<boolean>(false);
+  const [isStreakModalOpen, setIsStreakModalOpen] = useState<boolean>(false);
 
   // Sync to local storage with resilient rolling backup
   useEffect(() => {
@@ -80,6 +82,10 @@ export default function App() {
   const fiberConsumed = Math.round(
     todayLog.meals.reduce((s, m) => s + (m.total_macros.fiber_g || 0), 0) * 10
   ) / 10;
+
+  // Real dynamic streak computation based on dual goals (Calories & Steps)
+  const streakInfo = calculateStreakInfo(history, profile);
+  const targetCalories = calculateTargetCalories(profile);
 
   // Handlers
   const handleMealLogged = (newMeal: LoggedMeal) => {
@@ -165,7 +171,9 @@ export default function App() {
       {/* Top Application Header */}
       <Header
         profile={profile}
-        streakDays={5}
+        streakDays={streakInfo.currentStreak}
+        streakInfo={streakInfo}
+        onOpenStreakModal={() => setIsStreakModalOpen(true)}
         onOpenPlateScanner={() => openPlateScannerForType('Lunch')}
         onOpenCoach={() => setIsCoachOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -228,6 +236,77 @@ export default function App() {
         {/* VIEW 1: Main Dashboard (Net Calories + Food Timeline + Quick Step Widget) */}
         {currentView === 'dashboard' && (
           <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
+            {/* Visual Dual-Goal Streak Counter Banner */}
+            <div className="bg-gradient-to-r from-amber-950/35 via-slate-900 to-slate-900 border border-amber-500/25 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <button
+                  type="button"
+                  onClick={() => setIsStreakModalOpen(true)}
+                  className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 p-0.5 shadow-lg shadow-amber-500/20 flex items-center justify-center shrink-0 active:scale-95 transition-transform cursor-pointer"
+                  title="View Streak Details & Award"
+                >
+                  <div className="w-full h-full bg-slate-950 rounded-[14px] flex flex-col items-center justify-center">
+                    <Flame className="w-5 h-5 text-amber-400 fill-amber-400 animate-pulse" />
+                    <span className="text-xs font-black text-white leading-none mt-0.5">
+                      {streakInfo.currentStreak}d
+                    </span>
+                  </div>
+                </button>
+
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-extrabold text-white text-base tracking-tight flex items-center gap-1.5">
+                      <span>{streakInfo.currentStreak}-Day Dual Goal Streak</span>
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                        {streakInfo.motivationalBadge.title}
+                      </span>
+                    </h3>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                    <span>
+                      Consecutive days hitting <strong className="text-slate-200">both</strong> your step goal ({profile.stepGoal?.toLocaleString() || '10,000'} steps) &amp; calorie target ({targetCalories} kcal).
+                    </span>
+                    <button
+                      onClick={() => setIsStreakModalOpen(true)}
+                      className="text-amber-400 hover:text-amber-300 font-bold underline cursor-pointer text-xs"
+                    >
+                      View Breakdown &rarr;
+                    </button>
+                  </p>
+                </div>
+              </div>
+
+              {/* 7-Day Flame Matrix Strip */}
+              <div className="flex items-center gap-1.5 sm:gap-2 self-stretch md:self-auto justify-between md:justify-end bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                {streakInfo.past7Days.map((day, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setIsStreakModalOpen(true)}
+                    className={`flex flex-col items-center gap-1 px-2.5 py-1 rounded-lg border text-center transition-all cursor-pointer ${
+                      day.isToday
+                        ? 'border-cyan-500/50 bg-slate-800/90 ring-1 ring-cyan-500/30'
+                        : day.bothMet
+                        ? 'border-amber-500/30 bg-amber-500/10'
+                        : 'border-slate-800 bg-slate-900/60 opacity-60'
+                    }`}
+                    title={`${day.dayShort}: ${day.bothMet ? 'Both Goals Met' : day.isToday ? 'Today in progress' : 'Missed'}`}
+                  >
+                    <span className="text-[10px] font-bold text-slate-400">{day.dayShort}</span>
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs">
+                      {day.bothMet ? (
+                        <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                      ) : day.isToday ? (
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+                      ) : (
+                        <span className="text-[10px] text-slate-600 font-bold">✕</span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Module C: Net Calorie Hero */}
             <NetCalorieHero
               profile={profile}
@@ -419,6 +498,23 @@ export default function App() {
         onClose={() => setIsSettingsOpen(false)}
         profile={profile}
         onSaveProfile={(updated) => setProfile(updated)}
+      />
+
+      {/* Visual Streak Counter Modal */}
+      <StreakCounterModal
+        isOpen={isStreakModalOpen}
+        onClose={() => setIsStreakModalOpen(false)}
+        streakInfo={streakInfo}
+        profile={profile}
+        todaySteps={todayLog.steps}
+        todayCalories={caloriesConsumed}
+        targetCalories={targetCalories}
+        onOpenCoach={() => {
+          setIsCoachOpen(true);
+          setCoachInitialPrompt(
+            `Coach, I'm currently on a ${streakInfo.currentStreak}-day streak hitting both my calorie (${targetCalories} kcal) and step (${profile.stepGoal || 10000} steps) goals! What is your best advice to sustain this momentum without burnout?`
+          );
+        }}
       />
 
       {/* Connectivity & Offline Notification Toast */}

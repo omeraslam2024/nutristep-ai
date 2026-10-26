@@ -1,4 +1,4 @@
-import { UserProfile, FitnessGoal, ActivityLevel } from '../types';
+import { UserProfile, FitnessGoal, ActivityLevel, DayLog, LoggedMeal } from '../types';
 
 export const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
   sedentary: 1.2,
@@ -101,4 +101,170 @@ export function cmToFtIn(cm: number): { ft: number; in: number } {
 
 export function ftInToCm(ft: number, inches: number): number {
   return Math.round((ft * 12 + inches) * 2.54);
+}
+
+export interface StreakDaySummary {
+  date: string;
+  dayLabel: string;
+  dayShort: string;
+  steps: number;
+  stepGoal: number;
+  stepMet: boolean;
+  caloriesConsumed: number;
+  calorieTarget: number;
+  calMet: boolean;
+  bothMet: boolean;
+  isToday: boolean;
+}
+
+export interface StreakInfo {
+  currentStreak: number;
+  longestStreak: number;
+  isTodayComplete: boolean;
+  todayStepsMet: boolean;
+  todayCalMet: boolean;
+  past7Days: StreakDaySummary[];
+  motivationalBadge: {
+    title: string;
+    description: string;
+    icon: string;
+    color: string;
+  };
+}
+
+export function isDayCalorieGoalMet(
+  consumed: number,
+  targetCalories: number,
+  goal: FitnessGoal,
+  caloriesBurned = 0
+): boolean {
+  if (consumed === 0) return false;
+  if (goal === 'lose_weight') {
+    const net = consumed - caloriesBurned;
+    return consumed <= targetCalories + 150 || net <= targetCalories;
+  } else if (goal === 'gain_muscle') {
+    return consumed >= targetCalories - 150;
+  } else {
+    return Math.abs(consumed - targetCalories) <= 300;
+  }
+}
+
+export function calculateStreakInfo(history: DayLog[], profile: UserProfile): StreakInfo {
+  const targetCalories = calculateTargetCalories(profile);
+  const stepGoal = profile.stepGoal || 10000;
+
+  const evaluatedDays = history.map((day, index) => {
+    const isToday = index === history.length - 1;
+    const consumed = day.meals.reduce((sum: number, m: LoggedMeal) => sum + m.total_calories, 0);
+    const stepMet = day.steps >= stepGoal;
+    const calMet = isDayCalorieGoalMet(consumed, targetCalories, profile.goal, day.caloriesBurned);
+    const bothMet = stepMet && calMet;
+
+    const dateObj = new Date(day.date + 'T00:00:00');
+    const dayLabel = dateObj.toLocaleDateString('en-US', { weekday: 'narrow' });
+    const dayShort = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+
+    return {
+      date: day.date,
+      dayLabel,
+      dayShort,
+      steps: day.steps,
+      stepGoal,
+      stepMet,
+      caloriesConsumed: consumed,
+      calorieTarget: targetCalories,
+      calMet,
+      bothMet,
+      isToday,
+    };
+  });
+
+  const todayEval = evaluatedDays[evaluatedDays.length - 1];
+  const isTodayComplete = todayEval ? todayEval.bothMet : false;
+
+  let currentStreak = 0;
+  let startIndex = evaluatedDays.length - 1;
+  if (!isTodayComplete) {
+    startIndex = evaluatedDays.length - 2;
+  }
+
+  for (let i = startIndex; i >= 0; i--) {
+    if (evaluatedDays[i]?.bothMet) {
+      currentStreak++;
+    } else {
+      break;
+    }
+  }
+
+  // Calculate longest streak
+  let longestStreak = 0;
+  let running = 0;
+  for (const day of evaluatedDays) {
+    if (day.bothMet) {
+      running++;
+      if (running > longestStreak) longestStreak = running;
+    } else {
+      running = 0;
+    }
+  }
+
+  if (currentStreak > longestStreak) longestStreak = currentStreak;
+
+  // Past 7 days slice for week visualization
+  const past7Days = evaluatedDays.slice(-7);
+
+  // Milestone badge
+  let motivationalBadge = {
+    title: 'Streak Starter',
+    description: 'Log both goals today to ignite your streak!',
+    icon: '🔥',
+    color: 'from-amber-500 to-orange-500',
+  };
+
+  if (currentStreak >= 30) {
+    motivationalBadge = {
+      title: 'Fitness Titan',
+      description: '30+ Days of flawless consistency!',
+      icon: '👑',
+      color: 'from-yellow-400 to-amber-500',
+    };
+  } else if (currentStreak >= 14) {
+    motivationalBadge = {
+      title: 'Iron Consistency',
+      description: '2 Full weeks of hitting both nutrition & movement targets!',
+      icon: '⚡',
+      color: 'from-cyan-400 to-blue-500',
+    };
+  } else if (currentStreak >= 7) {
+    motivationalBadge = {
+      title: '7-Day Warrior',
+      description: 'A full week streak! Your metabolism is firing.',
+      icon: '🏆',
+      color: 'from-emerald-400 to-teal-500',
+    };
+  } else if (currentStreak >= 3) {
+    motivationalBadge = {
+      title: 'Habit Ignited',
+      description: '3+ Days in a row! Momentum is on your side.',
+      icon: '🔥',
+      color: 'from-amber-400 to-rose-500',
+    };
+  } else if (currentStreak >= 1) {
+    motivationalBadge = {
+      title: 'Streak Active',
+      description: 'Great start! Keep the streak alive today.',
+      icon: '✨',
+      color: 'from-amber-500 to-yellow-500',
+    };
+  }
+
+  return {
+    currentStreak,
+    longestStreak,
+    isTodayComplete,
+    todayStepsMet: todayEval?.stepMet || false,
+    todayCalMet: todayEval?.calMet || false,
+    past7Days,
+    motivationalBadge,
+  };
 }
