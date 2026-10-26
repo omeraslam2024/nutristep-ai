@@ -38,6 +38,8 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
   const [isSimulatingWalk, setIsSimulatingWalk] = useState<boolean>(false);
   const [isSensorActive, setIsSensorActive] = useState<boolean>(false);
   const [sensorStatus, setSensorStatus] = useState<string>('Ready');
+  const [workoutSeconds, setWorkoutSeconds] = useState<number>(0);
+  const [sessionStepsGained, setSessionStepsGained] = useState<number>(0);
 
   // Simulation timer ref
   const walkIntervalRef = useRef<any>(null);
@@ -48,12 +50,29 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
   const progressPct = Math.min(100, Math.round((currentSteps / stepGoal) * 100));
   const isGoalReached = currentSteps >= stepGoal;
 
+  // Active workout stopwatch timer
+  useEffect(() => {
+    let timer: any = null;
+    if (isSimulatingWalk || isSensorActive) {
+      timer = setInterval(() => {
+        setWorkoutSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setWorkoutSeconds(0);
+      setSessionStepsGained(0);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isSimulatingWalk, isSensorActive]);
+
   // Real-time walking simulator
   useEffect(() => {
     if (isSimulatingWalk) {
       walkIntervalRef.current = setInterval(() => {
         // ~10-14 steps every 2 seconds simulating brisk walk (100-110 steps/min)
         const delta = Math.floor(Math.random() * 5) + 10;
+        setSessionStepsGained((prev) => prev + delta);
         const currentHour = new Date().getHours();
         onUpdateSteps(currentSteps + delta, { hour: currentHour, steps: delta });
       }, 1500);
@@ -266,6 +285,30 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
               </span>
               <span className="text-[11px] text-slate-400">{sensorStatus}</span>
             </div>
+
+            {/* Active Workout Stopwatch HUD */}
+            {(isSimulatingWalk || isSensorActive) && (
+              <div className="flex items-center justify-between p-3 rounded-xl bg-cyan-950/70 border border-cyan-500/40 text-xs animate-in fade-in">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+                  <span className="font-bold text-white">Active Walk</span>
+                  <span className="text-cyan-300 font-mono font-bold bg-slate-900 px-2 py-0.5 rounded border border-cyan-500/30">
+                    {Math.floor(workoutSeconds / 60)
+                      .toString()
+                      .padStart(2, '0')}
+                    :{(workoutSeconds % 60).toString().padStart(2, '0')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-300">
+                  <span>
+                    Session: <strong className="text-cyan-300">+{sessionStepsGained}</strong> steps
+                  </span>
+                  <span>
+                    Burn: <strong className="text-amber-300">+{Math.round(profile.weightKg * (sessionStepsGained * 0.00075) * 0.75)}</strong> kcal
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {/* Walk simulator button */}

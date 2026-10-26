@@ -27,6 +27,8 @@ interface AiCoachDrawerProps {
   fatConsumed: number;
   waterMl?: number;
   meals: LoggedMeal[];
+  initialPrompt?: string | null;
+  onClearInitialPrompt?: () => void;
 }
 
 export const AiCoachDrawer: React.FC<AiCoachDrawerProps> = ({
@@ -41,6 +43,8 @@ export const AiCoachDrawer: React.FC<AiCoachDrawerProps> = ({
   fatConsumed,
   waterMl = 1750,
   meals,
+  initialPrompt,
+  onClearInitialPrompt,
 }) => {
   const dailyTarget = calculateTargetCalories(profile);
   const macroTargets = calculateMacroTargets(profile, dailyTarget);
@@ -80,6 +84,13 @@ You have **${Math.round(remainingCalories)} kcal** and **${remainingProtein}g of
       scrollToBottom();
     }
   }, [isOpen, messages]);
+
+  useEffect(() => {
+    if (isOpen && initialPrompt && initialPrompt.trim()) {
+      handleSendMessage(initialPrompt);
+      if (onClearInitialPrompt) onClearInitialPrompt();
+    }
+  }, [isOpen, initialPrompt]);
 
   const handleSendMessage = async (userText: string) => {
     if (!userText.trim() || isLoading) return;

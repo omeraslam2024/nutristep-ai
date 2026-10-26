@@ -6,12 +6,14 @@ interface MealTimelineProps {
   meals: LoggedMeal[];
   onOpenPlateScannerForType: (type: MealType) => void;
   onDeleteMeal: (mealId: string) => void;
+  onAskCoachAboutMeal?: (meal: LoggedMeal) => void;
 }
 
 export const MealTimeline: React.FC<MealTimelineProps> = ({
   meals,
   onOpenPlateScannerForType,
   onDeleteMeal,
+  onAskCoachAboutMeal,
 }) => {
   const mealSections: MealType[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 
@@ -136,13 +138,25 @@ export const MealTimeline: React.FC<MealTimelineProps> = ({
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => onDeleteMeal(meal.id)}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition-colors self-end sm:self-center cursor-pointer"
-                        title="Delete meal entry"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+                        {onAskCoachAboutMeal && (
+                          <button
+                            onClick={() => onAskCoachAboutMeal(meal)}
+                            className="flex items-center gap-1 px-2.5 py-1 text-slate-400 hover:text-purple-300 rounded-lg hover:bg-purple-950/40 text-xs font-semibold border border-transparent hover:border-purple-500/30 transition-all cursor-pointer"
+                            title="Ask AI Coach for recommendations about this meal"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                            <span className="hidden sm:inline">Ask Coach</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => onDeleteMeal(meal.id)}
+                          className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                          title="Delete meal entry"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}

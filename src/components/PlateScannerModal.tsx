@@ -327,6 +327,56 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     }
   };
 
+  const handleScanNutritionLabel = async (imageDataUrl: string) => {
+    setIsAnalyzing(true);
+    setErrorMessage(null);
+    try {
+      const res = await fetch('/api/scan-nutrition-label', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageDataUrl }),
+      });
+      if (!res.ok) {
+        throw new Error('Could not parse nutrition facts label.');
+      }
+      const data = await res.json();
+      const item: MealItem = {
+        id: `label-${Date.now()}`,
+        item_name: data.product_name || 'Packaged Item',
+        estimated_weight_g: 100,
+        calories: Number(data.calories) || 150,
+        protein_g: Number(data.protein_g) || 5,
+        carbs_g: Number(data.carbs_g) || 20,
+        fat_g: Number(data.fat_g) || 5,
+        fiber_g: Number(data.fiber_g) || 2,
+        sodium_mg: Number(data.sodium_mg) || 120,
+        confidence: Number(data.confidence) || 0.95,
+        visual_clues: `OCR Label: ${data.brand || ''} ${data.serving_size || ''}`,
+      };
+      setAnalysisResult({
+        meal_name: `${data.brand ? data.brand + ' ' : ''}${data.product_name || 'Packaged Product'}`,
+        confidence_score: 0.96,
+        total_calories: item.calories,
+        total_macros: {
+          protein_g: item.protein_g,
+          carbs_g: item.carbs_g,
+          fat_g: item.fat_g,
+          fiber_g: item.fiber_g || 0,
+          sodium_mg: item.sodium_mg || 0,
+        },
+        detected_items: [item],
+        dietary_flags: data.dietary_flags || ['Nutrition Label OCR'],
+        nutritionist_tip: `Extracted directly from package label (Serving size: ${data.serving_size || '1 serving'}).`,
+        image_url: imageDataUrl,
+        source: 'barcode',
+      });
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to extract nutrition facts from label.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const toggleVoiceRecording = () => {
     if (!recognitionRef.current) {
       alert('Voice dictation is not supported on this browser. You can type your meal description directly.');
@@ -1071,6 +1121,39 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                             {b.name} ({b.code})
                           </button>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Or Scan Nutrition Facts Label option */}
+                    <div className="pt-4 border-t border-slate-800/80">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-900/80 border border-slate-800 rounded-xl">
+                        <div>
+                          <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                            No barcode? Snap Nutrition Facts Label
+                          </span>
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            Take a photo of the printed nutrition panel on any box, bottle, or bag.
+                          </p>
+                        </div>
+                        <label className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-semibold cursor-pointer transition-colors active:scale-95 shrink-0">
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>Snap / Upload Label</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onload = () => {
+                                handleScanNutritionLabel(reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </label>
                       </div>
                     </div>
                   </div>

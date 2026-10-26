@@ -42,6 +42,7 @@ export default function App() {
   const [isPlateScannerOpen, setIsPlateScannerOpen] = useState<boolean>(false);
   const [scannerMealType, setScannerMealType] = useState<MealType>('Lunch');
   const [isCoachOpen, setIsCoachOpen] = useState<boolean>(false);
+  const [coachInitialPrompt, setCoachInitialPrompt] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isStepModalOpen, setIsStepModalOpen] = useState<boolean>(false);
 
@@ -152,6 +153,13 @@ export default function App() {
     setIsPlateScannerOpen(true);
   };
 
+  const handleAskCoachAboutMeal = (meal: LoggedMeal) => {
+    setCoachInitialPrompt(
+      `Coach, please analyze my ${meal.mealType}: "${meal.meal_name}" (${meal.total_calories} kcal, ${meal.total_macros.protein_g}g Protein, ${meal.total_macros.carbs_g}g Carbs, ${meal.total_macros.fat_g}g Fat). Is it well balanced for my fitness goal (${profile.goal}), and what can I pair with it next?`
+    );
+    setIsCoachOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
       {/* Top Application Header */}
@@ -242,6 +250,7 @@ export default function App() {
                   meals={todayLog.meals}
                   onOpenPlateScannerForType={openPlateScannerForType}
                   onDeleteMeal={handleDeleteMeal}
+                  onAskCoachAboutMeal={handleAskCoachAboutMeal}
                 />
               </div>
 
@@ -401,6 +410,8 @@ export default function App() {
         fatConsumed={fatConsumed}
         waterMl={todayLog.waterMl ?? 1750}
         meals={todayLog.meals}
+        initialPrompt={coachInitialPrompt}
+        onClearInitialPrompt={() => setCoachInitialPrompt(null)}
       />
 
       <ProfileSettingsModal
