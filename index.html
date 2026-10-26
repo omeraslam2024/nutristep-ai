@@ -16,6 +16,25 @@
     <meta property="og:description" content="AI-powered plate calorie estimator and daily movement tracker with multimodal Gemini computer vision, BMR/TDEE net energy balance, and personalized AI health coaching." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Gracefully silence harmless Vite dev server HMR WebSocket closure events in iframe sandbox
+      window.addEventListener('error', function (event) {
+        if (
+          event &&
+          event.message &&
+          (event.message.includes('WebSocket') || event.message.includes('ws://') || event.message.includes('wss://'))
+        ) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+      window.addEventListener('unhandledrejection', function (event) {
+        const reason = String(event && event.reason ? event.reason : '');
+        if (reason.includes('WebSocket') || reason.includes('ws:') || reason.includes('wss:')) {
+          event.preventDefault();
+        }
+      }, true);
+    </script>
   </head>
   <body>
     <div id="root"></div>
