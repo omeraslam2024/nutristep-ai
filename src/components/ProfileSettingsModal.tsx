@@ -357,6 +357,44 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
             </div>
           </div>
 
+          {/* Offline Sync & Data Management */}
+          <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-emerald-400" /> Offline Synchronization &amp; Storage
+                </span>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  All food logs, steps, water, and biometrics are saved safely offline in browser storage.
+                </p>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                PWA Active
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const rawHistory = localStorage.getItem('nutristep_history_v1') || localStorage.getItem('nutristep_history') || '[]';
+                  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(
+                    JSON.stringify({ profile: formData, history: JSON.parse(rawHistory), exportedAt: new Date().toISOString() }, null, 2)
+                  );
+                  const downloadAnchor = document.createElement('a');
+                  downloadAnchor.setAttribute('href', dataStr);
+                  downloadAnchor.setAttribute('download', `nutristep-backup-${new Date().toISOString().split('T')[0]}.json`);
+                  document.body.appendChild(downloadAnchor);
+                  downloadAnchor.click();
+                  downloadAnchor.remove();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition-colors cursor-pointer"
+              >
+                Download Data Backup (JSON)
+              </button>
+            </div>
+          </div>
+
           {/* Save Button */}
           <div className="pt-2 flex justify-end">
             <button

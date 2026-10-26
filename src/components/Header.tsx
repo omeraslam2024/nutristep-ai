@@ -1,6 +1,6 @@
-import React from 'react';
 import { Flame, Footprints, Bot, Settings, Plus, Camera, Sparkles } from 'lucide-react';
 import { UserProfile } from '../types';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface HeaderProps {
   profile: UserProfile;
@@ -50,6 +50,8 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Quick action buttons */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* PWA Install Button */}
+          <PWAInstallButton className="hidden sm:inline-flex" />
           {/* Snap / Log Food Button */}
           <button
             onClick={onOpenPlateScanner}

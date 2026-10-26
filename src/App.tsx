@@ -20,21 +20,20 @@ import { MealTimeline } from './components/MealTimeline';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { AiCoachDrawer } from './components/AiCoachDrawer';
 import { ProfileSettingsModal } from './components/ProfileSettingsModal';
+import { OfflineIndicator } from './components/OfflineIndicator';
 import { UserProfile, DayLog, LoggedMeal, MealType, HourlyStep } from './types';
-import { DEFAULT_USER_PROFILE, generateInitialHistory } from './data/initialData';
 import { calculateStepMetrics } from './utils/healthCalculations';
+import {
+  loadStoredProfile,
+  saveStoredProfile,
+  loadStoredHistory,
+  saveStoredHistory,
+} from './utils/offlineStorage';
 
 export default function App() {
-  // Load persistent state or initial seed
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('nutristep_profile');
-    return saved ? JSON.parse(saved) : DEFAULT_USER_PROFILE;
-  });
-
-  const [history, setHistory] = useState<DayLog[]>(() => {
-    const saved = localStorage.getItem('nutristep_history');
-    return saved ? JSON.parse(saved) : generateInitialHistory();
-  });
+  // Load persistent state using multi-level offline storage strategy
+  const [profile, setProfile] = useState<UserProfile>(() => loadStoredProfile());
+  const [history, setHistory] = useState<DayLog[]>(() => loadStoredHistory());
 
   // Current view tab
   const [currentView, setCurrentView] = useState<'dashboard' | 'movement' | 'analytics'>('dashboard');
@@ -46,13 +45,13 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isStepModalOpen, setIsStepModalOpen] = useState<boolean>(false);
 
-  // Sync to local storage
+  // Sync to local storage with resilient rolling backup
   useEffect(() => {
-    localStorage.setItem('nutristep_profile', JSON.stringify(profile));
+    saveStoredProfile(profile);
   }, [profile]);
 
   useEffect(() => {
-    localStorage.setItem('nutristep_history', JSON.stringify(history));
+    saveStoredHistory(history);
   }, [history]);
 
   // Today is the last element in history
@@ -410,6 +409,9 @@ export default function App() {
         profile={profile}
         onSaveProfile={(updated) => setProfile(updated)}
       />
+
+      {/* Connectivity & Offline Notification Toast */}
+      <OfflineIndicator />
     </div>
   );
 }

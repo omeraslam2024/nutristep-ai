@@ -233,7 +233,13 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
       setupAnalysisState(data, imageDataUrl, source);
     } catch (err: any) {
       console.error(err);
-      setErrorMessage(err.message || 'Image analysis failed. Please try another angle or sample.');
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        setErrorMessage(
+          'You are currently offline. Cloud AI plate analysis requires an internet connection. You can use any sample dish or manual entry to log meals locally offline.'
+        );
+      } else {
+        setErrorMessage(err.message || 'Image analysis failed. Please try another angle or sample.');
+      }
     } finally {
       setIsAnalyzing(false);
     }
