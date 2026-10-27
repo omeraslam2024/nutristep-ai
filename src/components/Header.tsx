@@ -64,11 +64,11 @@ export const Header: React.FC<HeaderProps> = ({
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Official NutriStep Healthy Progress Logo & Profile Greeting */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="w-12 h-12 rounded-2xl bg-white p-1 shadow-lg shadow-emerald-500/25 flex items-center justify-center shrink-0 border border-emerald-500/30">
             <img src="/icon.svg" alt="NutriStep Logo" className="w-full h-full object-contain" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-1.5">
                 NutriStep <span className="text-emerald-400 text-sm px-2 py-0.5 rounded-lg bg-emerald-500/20 border border-emerald-500/30">AI</span>
@@ -78,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onOpenStreakModal}
-                className="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-rose-500/20 hover:from-amber-500/30 hover:to-rose-500/30 border border-amber-500/40 text-amber-300 text-xs sm:text-sm font-black transition-all duration-200 active:scale-95 cursor-pointer shadow-sm hover:shadow-amber-500/25"
+                className="group relative hidden min-[370px]:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-rose-500/20 hover:from-amber-500/30 hover:to-rose-500/30 border border-amber-500/40 text-amber-300 text-xs sm:text-sm font-black transition-all duration-200 active:scale-95 cursor-pointer shadow-sm hover:shadow-amber-500/25"
                 title="Click to view full 7-day streak breakdown and goals"
               >
                 <Flame className="w-4 h-4 text-amber-400 fill-amber-400 group-hover:scale-110 transition-transform" />
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
             </div>
-            <p className="text-xs sm:text-sm text-slate-300 font-semibold mt-0.5">
+            <p className="text-xs sm:text-sm text-slate-300 font-semibold mt-0.5 truncate">
               {todayFormatted} &bull; Welcome, <strong className="text-white font-extrabold">{profile.name.split(' ')[0]}</strong>
             </p>
           </div>

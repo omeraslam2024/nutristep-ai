@@ -1,5 +1,5 @@
 import { UserProfile, DayLog } from '../types';
-import { DEFAULT_USER_PROFILE, generateInitialHistory } from '../data/initialData';
+import { DEFAULT_USER_PROFILE } from '../data/initialData';
 
 const PROFILE_KEY = 'nutristep_profile_v1';
 const HISTORY_KEY = 'nutristep_history_v1';
@@ -57,7 +57,8 @@ export function loadStoredHistory(): DayLog[] {
       }
     } catch {}
   }
-  return generateInitialHistory();
+  // A new install starts empty; App adds today's log.
+  return [];
 }
 
 export function saveStoredHistory(history: DayLog[]): void {

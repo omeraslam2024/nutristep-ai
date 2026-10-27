@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { apiUrl } from '../utils/api';
 import {
   X,
   Camera,
@@ -200,39 +201,16 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     setIsAnalyzing(true);
     setErrorMessage(null);
 
-    // Call server API, with graceful fallback to sample.fallbackData if Gemini key is testing/mocking
-    fetch('/api/analyze-plate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image: sample.image_url,
-        mealType,
-        notes: `Sample dish: ${sample.title}`,
-      }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error('Server analysis error');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setupAnalysisState(data, sample.image_url, 'sample');
-      })
-      .catch((_err) => {
-        // High fidelity fallback ensures instant out-of-the-box delight
-        setupAnalysisState(sample.fallbackData, sample.image_url, 'sample');
-      })
-      .finally(() => {
-        setIsAnalyzing(false);
-      });
+    // Sample dishes carry their own curated nutrition data; they are labelled "Sample", not AI.
+    setupAnalysisState(sample.fallbackData, sample.image_url, 'sample');
+    setIsAnalyzing(false);
   };
 
   const sendImageForAnalysis = async (imageDataUrl: string, source: LoggedMeal['source']) => {
     setIsAnalyzing(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/analyze-plate', {
+      const res = await fetch(apiUrl('/api/analyze-plate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -268,7 +246,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     setErrorMessage(null);
 
     try {
-      const res = await fetch('/api/parse-meal-text', {
+      const res = await fetch(apiUrl('/api/parse-meal-text'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: textInput, mealType }),
@@ -297,7 +275,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     setErrorMessage(null);
 
     try {
-      const res = await fetch(`/api/barcode-lookup/${encodeURIComponent(barcodeInput.trim())}`);
+      const res = await fetch(apiUrl(`/api/barcode-lookup/${encodeURIComponent(barcodeInput.trim())}`));
       const data = await res.json();
 
       if (!res.ok || !data.found) {
@@ -348,7 +326,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     setIsAnalyzing(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/scan-nutrition-label', {
+      const res = await fetch(apiUrl('/api/scan-nutrition-label'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageDataUrl }),

@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { UserProfile, ChatMessage, LoggedMeal } from '../types';
 import { calculateTargetCalories, calculateMacroTargets, calculateTDEE, calculateBMR } from '../utils/healthCalculations';
+import { apiUrl } from '../utils/api';
+import { RichText } from './RichText';
 
 interface AiCoachDrawerProps {
   isOpen: boolean;
@@ -42,7 +44,7 @@ export const AiCoachDrawer: React.FC<AiCoachDrawerProps> = ({
   proteinConsumed,
   carbsConsumed,
   fatConsumed,
-  waterMl = 1750,
+  waterMl = 0,
   meals,
   initialPrompt,
   onClearInitialPrompt,
@@ -113,29 +115,34 @@ How can I help you adjust your meal plan, boost your energy, or hit your goals t
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/coach/chat', {
+      // server.ts expects the whole conversation plus a userContext summary.
+      const history = [...messages.filter((m) => m.id !== 'welcome-msg'), userMsg].slice(-12);
+      const response = await fetch(apiUrl('/api/coach-chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userText,
-          profile,
-          metrics: {
+          messages: history.map((m) => ({ role: m.role, content: m.content })),
+          userContext: {
+            goal: profile.goal,
+            calorieTarget: dailyTarget,
+            bmr: calculateBMR(profile),
+            tdee: calculateTDEE(profile),
+            weightKg: profile.weightKg,
+            targetWeightKg: profile.targetWeightKg,
             caloriesConsumed,
-            caloriesBurned,
             steps,
-            remainingCalories,
+            stepGoal: profile.stepGoal,
+            caloriesBurned,
+            remainingCalories: Math.round(remainingCalories),
             proteinConsumed,
+            proteinTarget: macroTargets.protein_g,
             carbsConsumed,
+            carbsTarget: macroTargets.carbs_g,
             fatConsumed,
+            fatTarget: macroTargets.fat_g,
             waterMl,
-            dailyTarget,
+            recentMealsSummary: meals.map((m) => `${m.mealType}: ${m.meal_name} (${m.total_calories} kcal)`).join('; '),
           },
-          recentMeals: meals.map((m) => ({
-            name: m.meal_name,
-            calories: m.total_calories,
-            protein: m.total_macros.protein_g,
-            type: m.mealType,
-          })),
         }),
       });
 
@@ -155,7 +162,9 @@ How can I help you adjust your meal plan, boost your energy, or hit your goals t
       const fallbackReply: ChatMessage = {
         id: `err-${Date.now()}`,
         role: 'assistant',
-        content: `You currently have **${Math.round(remainingCalories)} kcal** and **${remainingProtein}g protein** remaining in your daily budget. Pairing a lean protein source (Greek yogurt, chicken, eggs, or tofu) with fiber will keep you feeling energized!`,
+        content: `The coach could not be reached just now, so here is a quick tip from your numbers.
+
+You currently have **${Math.round(remainingCalories)} kcal** and **${remainingProtein}g protein** remaining in your daily budget. Pairing a lean protein source (Greek yogurt, chicken, eggs, or tofu) with fiber will keep you feeling energized!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackReply]);
@@ -258,7 +267,7 @@ How can I help you adjust your meal plan, boost your energy, or hit your goals t
                     : 'bg-slate-950/90 border border-slate-800 text-slate-200 rounded-tl-none font-medium'
                 }`}
               >
-                {msg.content}
+                <RichText text={msg.content} />
               </div>
               <span className="text-[10px] text-slate-500 mt-1 px-1">
                 {msg.timestamp}

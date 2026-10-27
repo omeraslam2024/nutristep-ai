@@ -22,51 +22,26 @@ import confetti from 'canvas-confetti';
 import { UserProfile, HourlyStep } from '../types';
 import { calculateStepMetrics } from '../utils/healthCalculations';
 import { speakText, stopSpeaking } from '../utils/speechHelper';
+import type { usePedometer } from '../utils/pedometer/usePedometer';
 
 interface StepMovementTrackerProps {
   profile: UserProfile;
   currentSteps: number;
   hourlySteps: HourlyStep[];
-  onUpdateSteps: (newSteps: number, addedHourly?: { hour: number; steps: number }) => void;
-  onClose?: () => void;
+  onAddSteps: (delta: number) => void;
+  pedometer: ReturnType<typeof usePedometer>;
+  compact?: boolean;
   onBackToHome?: () => void;
 }
 
 export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
   profile,
   currentSteps,
-  hourlySteps,
-  onUpdateSteps,
-  onClose,
+  onAddSteps,
+  pedometer,
   onBackToHome,
 }) => {
-  const [isSimulatingWalk, setIsSimulatingWalk] = useState<boolean>(false);
-  const [isSensorActive, setIsSensorActive] = useState<boolean>(false);
-  const [isSensorPaused, setIsSensorPaused] = useState<boolean>(false);
-  const [sensorStatus, setSensorStatus] = useState<string>('Sensor Ready');
-  const [workoutSeconds, setWorkoutSeconds] = useState<number>(0);
-  const [sessionStepsGained, setSessionStepsGained] = useState<number>(0);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
-
-  // References to keep current values without re-attaching listeners
-  const stepsRef = useRef<number>(currentSteps);
-  stepsRef.current = currentSteps;
-
-  const onUpdateStepsRef = useRef(onUpdateSteps);
-  onUpdateStepsRef.current = onUpdateSteps;
-
-  const isSensorPausedRef = useRef<boolean>(isSensorPaused);
-  isSensorPausedRef.current = isSensorPaused;
-
-  const isSensorActiveRef = useRef<boolean>(isSensorActive);
-  isSensorActiveRef.current = isSensorActive;
-
-  // Pedometer Filter & Gait Rhythm State (Refs)
-  const lastStepTimestampRef = useRef<number>(0);
-  const isInPeakRef = useRef<boolean>(false);
-  const consecutiveRhythmicStepsRef = useRef<number>(0);
-  const gravityRef = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 9.81, z: 0 });
-  const walkIntervalRef = useRef<any>(null);
 
   // Calculate metrics based on user's weight & height
   const metrics = calculateStepMetrics(currentSteps, profile.weightKg, profile.heightCm);
@@ -75,156 +50,27 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
   const isGoalReached = currentSteps >= stepGoal;
   const stepsRemaining = Math.max(0, stepGoal - currentSteps);
 
-  // Workout stopwatch timer
+  // Celebrate the moment the goal is crossed, however the steps arrived.
+  const prevStepsRef = useRef(currentSteps);
   useEffect(() => {
-    let timer: any = null;
-    if ((isSimulatingWalk || (isSensorActive && !isSensorPaused))) {
-      timer = setInterval(() => {
-        setWorkoutSeconds((prev) => prev + 1);
-      }, 1000);
+    if (prevStepsRef.current < stepGoal && currentSteps >= stepGoal) {
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ['#06b6d4', '#10b981', '#3b82f6'] });
     }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isSimulatingWalk, isSensorActive, isSensorPaused]);
+    prevStepsRef.current = currentSteps;
+  }, [currentSteps, stepGoal]);
 
-  // Real-time walking simulator (Demo mode only, explicit toggle)
-  useEffect(() => {
-    if (isSimulatingWalk) {
-      walkIntervalRef.current = setInterval(() => {
-        const delta = Math.floor(Math.random() * 3) + 1; // 1-3 steps per 1.2s (realistic cadence)
-        setSessionStepsGained((prev) => prev + delta);
-        const currentHour = new Date().getHours();
-        onUpdateStepsRef.current(stepsRef.current + delta, { hour: currentHour, steps: delta });
-      }, 1200);
-    } else {
-      if (walkIntervalRef.current) clearInterval(walkIntervalRef.current);
-    }
-    return () => {
-      if (walkIntervalRef.current) clearInterval(walkIntervalRef.current);
-    };
-  }, [isSimulatingWalk]);
-
-  // Robust Accelerometer & Pedometer Gait Detection Engine
-  useEffect(() => {
-    if (!isSensorActive) return;
-
-    // Reset filter states upon activation
-    lastStepTimestampRef.current = 0;
-    isInPeakRef.current = false;
-    consecutiveRhythmicStepsRef.current = 0;
-    setSensorStatus('Listening for walking strides...');
-
-    const handleMotion = (event: DeviceMotionEvent) => {
-      if (isSensorPausedRef.current) {
-        setSensorStatus('Pedometer Paused');
-        return;
-      }
-
-      let linearMag = 0;
-
-      // Method 1: Use native linear acceleration (gravity-removed) if provided by device
-      if (
-        event.acceleration &&
-        event.acceleration.x !== null &&
-        event.acceleration.y !== null &&
-        event.acceleration.z !== null
-      ) {
-        const ax = event.acceleration.x;
-        const ay = event.acceleration.y;
-        const az = event.acceleration.z;
-        linearMag = Math.sqrt(ax * ax + ay * ay + az * az);
-      } else if (
-        event.accelerationIncludingGravity &&
-        event.accelerationIncludingGravity.x !== null &&
-        event.accelerationIncludingGravity.y !== null &&
-        event.accelerationIncludingGravity.z !== null
-      ) {
-        // Method 2: High-pass filter to isolate linear body movement from constant 1G earth gravity
-        const rawX = event.accelerationIncludingGravity.x;
-        const rawY = event.accelerationIncludingGravity.y;
-        const rawZ = event.accelerationIncludingGravity.z;
-
-        // Smooth low-pass gravity estimator
-        const alpha = 0.85;
-        gravityRef.current.x = alpha * gravityRef.current.x + (1 - alpha) * rawX;
-        gravityRef.current.y = alpha * gravityRef.current.y + (1 - alpha) * rawY;
-        gravityRef.current.z = alpha * gravityRef.current.z + (1 - alpha) * rawZ;
-
-        const linX = rawX - gravityRef.current.x;
-        const linY = rawY - gravityRef.current.y;
-        const linZ = rawZ - gravityRef.current.z;
-        linearMag = Math.sqrt(linX * linX + linY * linY + linZ * linZ);
-      } else {
-        setSensorStatus('Sensor unsupported');
-        return;
-      }
-
-      const now = Date.now();
-
-      // Human Gait Biomechanical Constants:
-      // Stationary phone resting/jitter is typically < 0.6 m/s².
-      // Genuine footfall impact yields a distinct peak > 2.0 m/s².
-      // Cadence constraint: Fastest running is ~350ms/step; slow walk is ~1400ms/step.
-      const STEP_PEAK_THRESHOLD = 2.1; // m/s² dynamic body acceleration
-      const STEP_VALLEY_THRESHOLD = 0.75; // m/s² swing phase dip
-      const MIN_STEP_CADENCE_MS = 380; // Debounce: max 2.6 steps/sec
-      const MAX_CADENCE_WINDOW_MS = 1600; // Cadence window: consecutive steps must be within 1.6s
-
-      // Detect rising acceleration peak (footstrike)
-      if (linearMag > STEP_PEAK_THRESHOLD && !isInPeakRef.current) {
-        const timeSinceLastStep = now - lastStepTimestampRef.current;
-
-        if (timeSinceLastStep >= MIN_STEP_CADENCE_MS) {
-          isInPeakRef.current = true;
-
-          // Check if this is part of continuous walking cadence
-          if (timeSinceLastStep <= MAX_CADENCE_WINDOW_MS) {
-            consecutiveRhythmicStepsRef.current += 1;
-          } else {
-            consecutiveRhythmicStepsRef.current = 1; // Restart rhythm cadence
-          }
-
-          // Anti-False-Positive Filter: Require at least 2 rhythmic footfalls
-          // This ensures single table knocks, car vibrations, or picking up the phone NEVER count as steps!
-          if (consecutiveRhythmicStepsRef.current >= 2) {
-            lastStepTimestampRef.current = now;
-            const newTotal = stepsRef.current + 1;
-            const currentHour = new Date().getHours();
-            onUpdateStepsRef.current(newTotal, { hour: currentHour, steps: 1 });
-            setSessionStepsGained((prev) => prev + 1);
-            setSensorStatus('Walking Step Detected');
-          } else {
-            lastStepTimestampRef.current = now;
-            setSensorStatus('Cadence Syncing...');
-          }
-        }
-      } else if (linearMag < STEP_VALLEY_THRESHOLD && isInPeakRef.current) {
-        // Foot has left the ground, leg swing phase reset
-        isInPeakRef.current = false;
-      }
-    };
-
-    window.addEventListener('devicemotion', handleMotion);
-    return () => {
-      window.removeEventListener('devicemotion', handleMotion);
-    };
-  }, [isSensorActive]); // Notice: NO currentSteps in dependency array! Clean sensor lifecycle!
-
-  const handleManualAdd = (stepsToAdd: number) => {
-    const newTotal = currentSteps + stepsToAdd;
-    const currentHour = new Date().getHours();
-    onUpdateSteps(newTotal, { hour: currentHour, steps: stepsToAdd });
-
-    if (newTotal >= stepGoal && currentSteps < stepGoal) {
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#06b6d4', '#10b981', '#3b82f6'],
-      });
-    }
-  };
+  const sensorLabel =
+    pedometer.status === 'active'
+      ? pedometer.mode === 'hardware'
+        ? 'Counting all day'
+        : 'Counting while app is open'
+      : pedometer.status === 'denied'
+      ? 'Permission needed'
+      : pedometer.status === 'unsupported'
+      ? 'Not available'
+      : pedometer.status === 'starting'
+      ? 'Starting…'
+      : 'Off';
 
   const handleSpeakSteps = () => {
     if (isSpeaking) {
@@ -242,12 +88,6 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
       setIsSpeaking(true);
       setTimeout(() => setIsSpeaking(false), 8000);
     }
-  };
-
-  const formatTimer = (totalSecs: number) => {
-    const mins = Math.floor(totalSecs / 60);
-    const secs = totalSecs % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -335,17 +175,6 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
             </div>
           </div>
 
-          {/* Workout active session hud */}
-          {(isSimulatingWalk || isSensorActive) && (
-            <div className="mt-4 pt-3 border-t border-slate-800 w-full flex items-center justify-between text-xs text-slate-300 font-bold">
-              <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-cyan-400" /> Session: {formatTimer(workoutSeconds)}
-              </span>
-              <span className="text-emerald-400 font-black">
-                +{sessionStepsGained} steps
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Right: Metrics Grid + Big Action Buttons */}
@@ -391,7 +220,7 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
               {[500, 1000, 2500, 5000].map((stepAmt) => (
                 <button
                   key={stepAmt}
-                  onClick={() => handleManualAdd(stepAmt)}
+                  onClick={() => onAddSteps(stepAmt)}
                   className="py-3 px-2 rounded-2xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 text-white font-black text-xs sm:text-sm transition-all cursor-pointer shadow-sm text-center min-h-[48px]"
                 >
                   +{stepAmt.toLocaleString()} 👟
@@ -399,83 +228,52 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
               ))}
             </div>
 
-            {/* Live Hardware Pedometer Sensor Controls with Pause / Resume */}
+            {/* Phone step counter */}
             <div className="pt-2 border-t border-slate-800/80 space-y-2">
               <div className="flex items-center justify-between text-xs font-bold text-slate-400">
                 <span className="flex items-center gap-1.5">
-                  <Smartphone className="w-4 h-4 text-cyan-400" /> Device Pedometer Sensor
+                  <Smartphone className="w-4 h-4 text-cyan-400" /> Phone step counter
                 </span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    isSensorActive
-                      ? isSensorPaused
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    pedometer.status === 'active'
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : pedometer.status === 'denied'
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                       : 'bg-slate-800 text-slate-400'
                   }`}
                 >
-                  {isSensorActive ? (isSensorPaused ? '⏸️ Sensor Paused' : '🟢 Filter Active') : '⚪ Off'}
+                  {sensorLabel}
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {/* Hardware Sensor Toggle */}
+              {pedometer.status !== 'unsupported' && (
                 <button
-                  onClick={() => {
-                    if (isSensorActive) {
-                      setIsSensorActive(false);
-                      setIsSensorPaused(false);
-                      setSensorStatus('Sensor Turned Off');
-                    } else {
-                      setIsSensorActive(true);
-                      setIsSensorPaused(false);
-                      setIsSimulatingWalk(false); // Stop simulation if turning on hardware sensor
-                    }
-                  }}
-                  className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-md min-h-[48px] ${
-                    isSensorActive
-                      ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border-2 border-rose-500/50'
+                  onClick={() => pedometer.setEnabled(!pedometer.enabled || pedometer.status === 'denied')}
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-md min-h-[48px] ${
+                    pedometer.enabled && pedometer.status !== 'denied'
+                      ? 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
                       : 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border-2 border-cyan-500/50'
                   }`}
                 >
                   <Smartphone className="w-4 h-4 text-cyan-400" />
-                  <span>{isSensorActive ? 'Turn Off Phone Sensor' : '📱 Turn On Phone Sensor'}</span>
+                  <span>
+                    {pedometer.status === 'denied'
+                      ? 'Allow physical activity access'
+                      : pedometer.enabled
+                      ? 'Turn off step counting'
+                      : 'Count my steps automatically'}
+                  </span>
                 </button>
-
-                {/* Pause / Resume Button (Prevents Stationary False Steps) */}
-                {isSensorActive ? (
-                  <button
-                    onClick={() => setIsSensorPaused(!isSensorPaused)}
-                    className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-md min-h-[48px] ${
-                      isSensorPaused
-                        ? 'bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-300 border-2 border-emerald-500/50'
-                        : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-2 border-amber-500/50'
-                    }`}
-                  >
-                    {isSensorPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                    <span>{isSensorPaused ? '▶️ Resume Step Counting' : '⏸️ Pause (Resting / In Car)'}</span>
-                  </button>
-                ) : (
-                  /* Walk Simulation Toggle for Demo Testing */
-                  <button
-                    onClick={() => setIsSimulatingWalk(!isSimulatingWalk)}
-                    className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-black text-xs sm:text-sm transition-all cursor-pointer shadow-md min-h-[48px] ${
-                      isSimulatingWalk
-                        ? 'bg-rose-500/30 text-rose-300 border-2 border-rose-500 animate-pulse'
-                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
-                    }`}
-                  >
-                    {isSimulatingWalk ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    <span>{isSimulatingWalk ? 'Stop Walk Demo' : '🚶 Test Walk Simulator'}</span>
-                  </button>
-                )}
-              </div>
-
-              {isSensorActive && (
-                <p className="text-[11px] text-slate-400 italic text-center pt-1">
-                  Biomechanical filter enabled: Only genuine walking strides are counted. Stationary shakes and table vibrations are ignored.
-                </p>
               )}
+
+              <p className="text-[11px] text-slate-400 text-center pt-1">
+                {pedometer.status === 'denied'
+                  ? 'If no prompt appears, allow "Physical activity" for NutriStep in Android Settings › Apps.'
+                  : pedometer.mode === 'hardware'
+                  ? "Uses your phone's built-in step sensor, which only counts real walking — even when the app is closed."
+                  : 'Counts while this screen is open. A phone lying still, in a car or being handled does not add steps.'}
+              </p>
             </div>
           </div>
         </div>

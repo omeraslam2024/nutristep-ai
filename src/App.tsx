@@ -22,7 +22,7 @@ import { AiCoachDrawer } from './components/AiCoachDrawer';
 import { ProfileSettingsModal } from './components/ProfileSettingsModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { StreakCounterModal } from './components/StreakCounterModal';
-import { UserProfile, DayLog, LoggedMeal, MealType, HourlyStep } from './types';
+import { UserProfile, DayLog, LoggedMeal, MealType } from './types';
 import { calculateStepMetrics, calculateStreakInfo, calculateTargetCalories } from './utils/healthCalculations';
 import {
   loadStoredProfile,
@@ -30,11 +30,13 @@ import {
   loadStoredHistory,
   saveStoredHistory,
 } from './utils/offlineStorage';
+import { ensureToday, stripSeedData } from './utils/history';
+import { usePedometer } from './utils/pedometer/usePedometer';
 
 export default function App() {
   // Load persistent state using multi-level offline storage strategy
   const [profile, setProfile] = useState<UserProfile>(() => loadStoredProfile());
-  const [history, setHistory] = useState<DayLog[]>(() => loadStoredHistory());
+  const [history, setHistory] = useState<DayLog[]>(() => ensureToday(stripSeedData(loadStoredHistory()).history));
 
   // Current view tab
   const [currentView, setCurrentView] = useState<'dashboard' | 'movement' | 'analytics'>('dashboard');
@@ -57,16 +59,19 @@ export default function App() {
     saveStoredHistory(history);
   }, [history]);
 
-  // Today is the last element in history
-  const todayLog = history[history.length - 1] || {
-    date: new Date().toISOString().split('T')[0],
-    steps: 6420,
-    distanceKm: 4.8,
-    caloriesBurned: 366,
-    activeMinutes: 62,
-    hourlySteps: [],
-    meals: [],
-  };
+  // Start a new day log at midnight and when the app comes back from the background.
+  useEffect(() => {
+    const roll = () => setHistory((prev) => ensureToday(prev));
+    const timer = setInterval(roll, 60_000);
+    document.addEventListener('visibilitychange', roll);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', roll);
+    };
+  }, []);
+
+  // ensureToday guarantees the last entry is today.
+  const todayLog = history[history.length - 1];
 
   // Compute today's consumption
   const caloriesConsumed = todayLog.meals.reduce((s, m) => s + m.total_calories, 0);
@@ -94,72 +99,50 @@ export default function App() {
     netRemaining
   )} calories remaining to eat today, and you took ${todayLog.steps.toLocaleString()} steps. Tap the big green camera button to take a picture of your food!`;
 
-  // Handlers
-  const handleMealLogged = (newMeal: LoggedMeal) => {
+  // Handlers: every write goes to today's log, rolling the day over first if midnight has passed.
+  const updateToday = (fn: (today: DayLog) => DayLog) => {
     setHistory((prev) => {
-      const copy = [...prev];
-      const today = { ...copy[copy.length - 1] };
-      today.meals = [...today.meals, newMeal];
-      copy[copy.length - 1] = today;
+      const copy = ensureToday(prev).slice();
+      copy[copy.length - 1] = fn(copy[copy.length - 1]);
       return copy;
     });
   };
 
-  const handleDeleteMeal = (mealId: string) => {
-    setHistory((prev) => {
-      const copy = [...prev];
-      const today = { ...copy[copy.length - 1] };
-      today.meals = today.meals.filter((m) => m.id !== mealId);
-      copy[copy.length - 1] = today;
-      return copy;
+  const handleMealLogged = (newMeal: LoggedMeal) =>
+    updateToday((today) => ({ ...today, meals: [...today.meals, newMeal] }));
+
+  const handleDeleteMeal = (mealId: string) =>
+    updateToday((today) => ({ ...today, meals: today.meals.filter((m) => m.id !== mealId) }));
+
+  /** Adds newly walked steps (a delta, never a total) to today and the current hour. */
+  const handleAddSteps = (delta: number) => {
+    if (!(delta > 0)) return;
+    const hour = new Date().getHours();
+    updateToday((today) => {
+      const steps = today.steps + delta;
+      const metrics = calculateStepMetrics(steps, profile.weightKg, profile.heightCm);
+      const hourlySteps = today.hourlySteps.some((h) => h.hour === hour)
+        ? today.hourlySteps.map((h) => (h.hour === hour ? { ...h, steps: h.steps + delta } : h))
+        : [...today.hourlySteps, { hour, steps: delta }];
+      return {
+        ...today,
+        steps,
+        distanceKm: metrics.distanceKm,
+        caloriesBurned: metrics.caloriesBurned,
+        activeMinutes: metrics.activeMinutes,
+        hourlySteps,
+      };
     });
   };
 
-  const handleUpdateSteps = (newSteps: number, addedHourly?: { hour: number; steps: number }) => {
-    setHistory((prev) => {
-      const copy = [...prev];
-      const today = { ...copy[copy.length - 1] };
-      today.steps = newSteps;
-
-      const metrics = calculateStepMetrics(newSteps, profile.weightKg, profile.heightCm);
-      today.distanceKm = metrics.distanceKm;
-      today.caloriesBurned = metrics.caloriesBurned;
-      today.activeMinutes = metrics.activeMinutes;
-
-      if (addedHourly) {
-        const existingIdx = today.hourlySteps.findIndex((h) => h.hour === addedHourly.hour);
-        if (existingIdx >= 0) {
-          today.hourlySteps[existingIdx].steps += addedHourly.steps;
-        } else {
-          today.hourlySteps.push({ hour: addedHourly.hour, steps: addedHourly.steps });
-        }
-      }
-
-      copy[copy.length - 1] = today;
-      return copy;
-    });
-  };
+  const pedometer = usePedometer(handleAddSteps);
 
   const handleLogWeight = (weight: number) => {
     setProfile((prev) => ({ ...prev, weightKg: weight }));
-    setHistory((prev) => {
-      const copy = [...prev];
-      const today = { ...copy[copy.length - 1] };
-      today.weightLogged = weight;
-      copy[copy.length - 1] = today;
-      return copy;
-    });
+    updateToday((today) => ({ ...today, weightLogged: weight }));
   };
 
-  const handleUpdateWater = (newWaterMl: number) => {
-    setHistory((prev) => {
-      const copy = [...prev];
-      const today = { ...copy[copy.length - 1] };
-      today.waterMl = newWaterMl;
-      copy[copy.length - 1] = today;
-      return copy;
-    });
-  };
+  const handleUpdateWater = (newWaterMl: number) => updateToday((today) => ({ ...today, waterMl: newWaterMl }));
 
   const openPlateScannerForType = (type: MealType) => {
     setScannerMealType(type);
@@ -343,12 +326,14 @@ export default function App() {
                   profile={profile}
                   currentSteps={todayLog.steps}
                   hourlySteps={todayLog.hourlySteps}
-                  onUpdateSteps={handleUpdateSteps}
+                  onAddSteps={handleAddSteps}
+                  pedometer={pedometer}
+                  compact
                 />
 
                 {/* Water Intake & Hydration Tracker */}
                 <WaterTracker
-                  waterMl={todayLog.waterMl ?? 1750}
+                  waterMl={todayLog.waterMl ?? 0}
                   waterTargetMl={profile.waterTargetMl || 2500}
                   onUpdateWater={handleUpdateWater}
                   unitSystem={profile.unitSystem}
@@ -389,7 +374,8 @@ export default function App() {
               profile={profile}
               currentSteps={todayLog.steps}
               hourlySteps={todayLog.hourlySteps}
-              onUpdateSteps={handleUpdateSteps}
+              onAddSteps={handleAddSteps}
+              pedometer={pedometer}
               onBackToHome={() => setCurrentView('dashboard')}
             />
 
@@ -520,7 +506,7 @@ export default function App() {
         proteinConsumed={proteinConsumed}
         carbsConsumed={carbsConsumed}
         fatConsumed={fatConsumed}
-        waterMl={todayLog.waterMl ?? 1750}
+        waterMl={todayLog.waterMl ?? 0}
         meals={todayLog.meals}
         initialPrompt={coachInitialPrompt}
         onClearInitialPrompt={() => setCoachInitialPrompt(null)}

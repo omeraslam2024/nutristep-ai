@@ -10,3 +10,4 @@ coverage/
 .aistudio/
 public/assets/aistudio/
 android/app/src/main/assets/public/assets/aistudio/
+dev-dist/

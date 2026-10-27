@@ -185,11 +185,15 @@ export const MealTimeline: React.FC<MealTimelineProps> = ({
                             <h5 className="text-base sm:text-lg font-black text-white leading-tight">
                               {meal.meal_name}
                             </h5>
-                            {meal.confidence_score && (
+                            {meal.source === 'sample' ? (
+                              <span className="text-xs font-black px-2 py-0.5 rounded-lg bg-slate-700/60 text-slate-300 border border-slate-600">
+                                Sample
+                              </span>
+                            ) : meal.confidence_score ? (
                               <span className="text-xs font-black px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                                 ✓ AI Match
                               </span>
-                            )}
+                            ) : null}
                           </div>
 
                           {/* Giant Calorie and Macro Labels */}
