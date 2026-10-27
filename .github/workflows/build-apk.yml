@@ -50,19 +50,16 @@ jobs:
       - name: Create GitHub Release with APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.1
-          name: NutriStep AI v1.1.1 - Mobile Viewport & Screen Fit Fix
+          tag_name: v1.1.2
+          name: NutriStep AI v1.1.2 - Status Bar & Menu Proportion Fix
           body: |
-            ## 📱 NutriStep AI v1.1.1 (Screen Fit & Mobile Layout Fix)
+            ## 📱 NutriStep AI v1.1.2 (Status Bar & Menu Alignment Fix)
             
-            ### 🔧 Fixed in this Release:
-            - **Full Screen Fit:** Fixed the viewport scaling and horizontal overflow issue that caused the screen to cut in half and display a white stripe on the right.
-            - **Proper Mobile Layout:** Adjusted the top header and tabs to fit 100% of the mobile screen width with zero horizontal scrolling.
-            - **Dark Background Fix:** Ensured the background is dark across the entire phone display.
-            - **Retained All Features:** Big text, universal emojis, voice readouts, and the 1-tap snap food camera button.
-            - **Ultra-Graphical & Low-Literacy Friendly:** Universal emojis (🍳 Breakfast, 🥗 Lunch, 🍲 Dinner, 🍎 Snacks, 👟 Steps, 💧 Water), traffic-light indicators (🟢 Green = On Track, 🔴 Red = Over limit).
-            - **🔊 Voice Readout / Text-to-Speech:** Tap the "🔊 Hear Status" button anywhere to listen to your daily calories, meal summaries, and step count spoken aloud!
-            - **Giant 1-Tap Navigation Bar:** Easy-to-tap 64px camera snap button and colorful bottom tabs.
+            ### 🔧 What was Fixed in this Release:
+            - **Status Bar & Signal Bar Collision Fixed:** Added safe-area padding at the top of the header so NutriStep AI, Streak, and buttons now sit comfortably below the clock, camera hole, WiFi, and battery indicators.
+            - **100% Proportional Menu Tabs:** Replaced the scrolling tabs with a clean 3-column segmented grid (`🍽️ Food` | `👟 Steps` | `📈 Reports`). No more clipped words or awkward edge cuts!
+            - **7-Day Streak Alignment:** The mini 7-day flame history is now a neat 7-column grid that fits inside the card without overflowing.
+            - **Full-Screen Responsive:** Zero white spaces, zero horizontal cutoff, edge-to-edge dark theme.
             
             ### 📲 How to Install the Update on Pixel 7:
             1. Tap **`app-debug.apk`** below to download directly to your phone.

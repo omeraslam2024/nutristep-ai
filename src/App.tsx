@@ -191,50 +191,45 @@ export default function App() {
         }}
       />
 
-      {/* Primary Sub-Nav Bar - Responsive & Scrollable on Mobile */}
-      <div className="bg-slate-900/90 border-b border-slate-800 px-3 sm:px-6 py-2.5 w-full max-w-full overflow-x-hidden">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-1 w-full sm:w-auto">
+      {/* Primary Sub-Nav Bar - 100% Proportional Grid (Never Clipped) */}
+      <div className="bg-slate-900/90 border-b border-slate-800 px-3 sm:px-6 py-2.5 w-full max-w-full">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-3 gap-2 bg-slate-950/70 p-1.5 rounded-2xl border border-slate-800/80">
             <button
               onClick={() => setCurrentView('dashboard')}
-              className={`shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-base font-black transition-all cursor-pointer shadow-sm ${
+              className={`flex items-center justify-center gap-1.5 py-2 sm:py-2.5 px-2 rounded-xl text-xs sm:text-base font-black transition-all cursor-pointer ${
                 currentView === 'dashboard'
-                  ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/40 shadow-emerald-500/10'
-                  : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
+                  ? 'bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span className="text-base sm:text-xl">🍽️</span>
-              <span>Food &amp; Calories</span>
+              <span className="truncate">Food</span>
             </button>
 
             <button
               onClick={() => setCurrentView('movement')}
-              className={`shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-base font-black transition-all cursor-pointer shadow-sm ${
+              className={`flex items-center justify-center gap-1.5 py-2 sm:py-2.5 px-2 rounded-xl text-xs sm:text-base font-black transition-all cursor-pointer ${
                 currentView === 'movement'
-                  ? 'bg-cyan-500/25 text-cyan-300 border-2 border-cyan-500/40 shadow-cyan-500/10'
-                  : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
+                  ? 'bg-cyan-500/25 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span className="text-base sm:text-xl">👟</span>
-              <span>Daily Steps</span>
+              <span className="truncate">Steps</span>
             </button>
 
             <button
               onClick={() => setCurrentView('analytics')}
-              className={`shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-base font-black transition-all cursor-pointer shadow-sm ${
+              className={`flex items-center justify-center gap-1.5 py-2 sm:py-2.5 px-2 rounded-xl text-xs sm:text-base font-black transition-all cursor-pointer ${
                 currentView === 'analytics'
-                  ? 'bg-purple-500/25 text-purple-300 border-2 border-purple-500/40 shadow-purple-500/10'
-                  : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
+                  ? 'bg-purple-500/25 text-purple-300 border border-purple-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span className="text-base sm:text-xl">📈</span>
-              <span>Reports</span>
+              <span className="truncate">Reports</span>
             </button>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2 text-xs text-slate-400 shrink-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Gemini Vision Online</span>
           </div>
         </div>
       </div>
@@ -284,14 +279,14 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 7-Day Flame Matrix Strip */}
-              <div className="flex items-center gap-1.5 sm:gap-2 self-stretch md:self-auto justify-between md:justify-end bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+              {/* 7-Day Flame Matrix Strip - Proportional Grid */}
+              <div className="grid grid-cols-7 gap-1 sm:gap-1.5 w-full md:w-auto self-stretch md:self-auto bg-slate-950/60 p-1.5 sm:p-2 rounded-xl border border-slate-800/80">
                 {streakInfo.past7Days.map((day, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setIsStreakModalOpen(true)}
-                    className={`flex flex-col items-center gap-1 px-2.5 py-1 rounded-lg border text-center transition-all cursor-pointer ${
+                    className={`flex flex-col items-center justify-center py-1.5 px-0.5 rounded-lg border text-center transition-all cursor-pointer ${
                       day.isToday
                         ? 'border-cyan-500/50 bg-slate-800/90 ring-1 ring-cyan-500/30'
                         : day.bothMet

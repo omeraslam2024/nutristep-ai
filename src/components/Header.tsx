@@ -55,7 +55,13 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-lg border-b border-slate-800/90 px-3 sm:px-6 py-3 shadow-md">
+    <header
+      className="sticky top-0 z-30 bg-slate-950/95 backdrop-blur-lg border-b border-slate-800/90 px-3 sm:px-6 shadow-md"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 2.75rem)',
+        paddingBottom: '0.75rem',
+      }}
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         {/* Brand logo & Profile Greeting with Big Visual Streak Counter */}
         <div className="flex items-center gap-3">
