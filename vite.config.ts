@@ -22,8 +22,8 @@ export default defineConfig(() => {
           short_name: 'NutriStep',
           description:
             'AI-powered plate calorie estimator and daily movement tracker with multimodal Gemini computer vision, BMR/TDEE net energy balance, and personalized AI health coaching.',
-          theme_color: '#020617',
-          background_color: '#020617',
+          theme_color: '#0b100d',
+          background_color: '#0b100d',
           display: 'standalone',
           start_url: '/',
           scope: '/',

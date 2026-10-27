@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand colours, sampled from nutristep-logo.png (same values as src/index.css). -->
+    <color name="brand_lime">#5BB324</color>
+    <color name="brand_leaf">#1B7A42</color>
+    <color name="brand_forest">#0A4A32</color>
+    <!-- Page background of the light theme (slate-950 token). -->
+    <color name="app_background">#F4F6F0</color>
+</resources>

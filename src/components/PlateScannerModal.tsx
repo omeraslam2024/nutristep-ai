@@ -649,7 +649,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
           {isAnalyzing && (
             <div className="py-14 flex flex-col items-center justify-center text-center space-y-4">
               <div className="relative">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 animate-spin flex items-center justify-center p-1">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 animate-spin flex items-center justify-center p-1">
                   <div className="w-full h-full bg-slate-900 rounded-xl flex items-center justify-center">
                     <Sparkles className="w-7 h-7 text-emerald-400 animate-pulse" />
                   </div>

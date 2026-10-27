@@ -11,3 +11,9 @@ coverage/
 public/assets/aistudio/
 android/app/src/main/assets/public/assets/aistudio/
 dev-dist/
+
+# Release signing (never commit)
+android/keystore.properties
+*.jks
+*.keystore
+release/
