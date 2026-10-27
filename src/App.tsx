@@ -390,9 +390,10 @@ export default function App() {
               currentSteps={todayLog.steps}
               hourlySteps={todayLog.hourlySteps}
               onUpdateSteps={handleUpdateSteps}
+              onBackToHome={() => setCurrentView('dashboard')}
             />
 
-            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div>
                 <h4 className="text-base font-bold text-white">How steps offset your calories</h4>
                 <p className="text-xs text-slate-400 max-w-xl mt-1">
@@ -401,7 +402,7 @@ export default function App() {
               </div>
               <button
                 onClick={() => openPlateScannerForType('Dinner')}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs sm:text-sm shadow-md transition-all active:scale-95 cursor-pointer shrink-0 min-h-[48px]"
               >
                 Log Nutritious Dinner Plate
               </button>
@@ -412,6 +413,20 @@ export default function App() {
         {/* VIEW 3: Weekly & Monthly Analytics */}
         {currentView === 'analytics' && (
           <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Top Back to Home Navigation Bar for Analytics */}
+            <div className="flex items-center justify-between p-3.5 bg-slate-900 border border-slate-800 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => setCurrentView('dashboard')}
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-2 min-h-[48px]"
+              >
+                <span className="text-emerald-400 font-black text-sm">← Back to Home</span>
+              </button>
+              <span className="text-xs sm:text-sm font-black text-purple-300 flex items-center gap-1.5">
+                <span>📈 Nutrition &amp; Step Trends</span>
+              </span>
+            </div>
+
             <AnalyticsCharts
               history={history}
               profile={profile}
@@ -421,11 +436,16 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Bottom Navigation - Giant, Colorful & Intuitive for Easy Mobile Use */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t-2 border-slate-800 px-3 py-2 flex items-center justify-around shadow-2xl">
+      {/* Floating Bottom Navigation - Giant, Colorful & Safe on All Phones */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t-2 border-slate-800 px-3 pt-2 flex items-center justify-around shadow-2xl"
+        style={{
+          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0.75rem)',
+        }}
+      >
         <button
           onClick={() => setCurrentView('dashboard')}
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer min-h-[48px] min-w-[48px] ${
             currentView === 'dashboard'
               ? 'text-emerald-300 font-black scale-105'
               : 'text-slate-400 hover:text-white font-bold'
@@ -437,7 +457,7 @@ export default function App() {
 
         <button
           onClick={() => setCurrentView('movement')}
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer min-h-[48px] min-w-[48px] ${
             currentView === 'movement'
               ? 'text-cyan-300 font-black scale-105'
               : 'text-slate-400 hover:text-white font-bold'
@@ -450,7 +470,7 @@ export default function App() {
         {/* GIANT CENTER SNAP BUTTON */}
         <button
           onClick={() => openPlateScannerForType('Lunch')}
-          className="flex flex-col items-center -mt-8 cursor-pointer group active:scale-90 transition-transform"
+          className="flex flex-col items-center -mt-8 cursor-pointer group active:scale-90 transition-transform min-h-[56px] min-w-[56px]"
           title="Take photo of food plate"
         >
           <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-400 via-teal-300 to-emerald-500 p-0.5 shadow-2xl shadow-emerald-500/60 border-4 border-slate-950 flex items-center justify-center text-slate-950">
@@ -463,7 +483,7 @@ export default function App() {
 
         <button
           onClick={() => setIsCoachOpen(true)}
-          className="flex flex-col items-center gap-1 py-1 px-2 rounded-xl text-purple-300 hover:text-purple-200 font-bold transition-all cursor-pointer"
+          className="flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl text-purple-300 hover:text-purple-200 font-bold transition-all cursor-pointer min-h-[48px] min-w-[48px]"
         >
           <span className="text-2xl">🤖</span>
           <span className="text-xs font-black">Coach</span>
@@ -471,7 +491,7 @@ export default function App() {
 
         <button
           onClick={() => setCurrentView('analytics')}
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer min-h-[48px] min-w-[48px] ${
             currentView === 'analytics'
               ? 'text-indigo-300 font-black scale-105'
               : 'text-slate-400 hover:text-white font-bold'

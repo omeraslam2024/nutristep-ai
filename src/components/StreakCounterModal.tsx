@@ -45,21 +45,38 @@ export const StreakCounterModal: React.FC<StreakCounterModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-slate-900 border-2 border-slate-800 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 2.75rem)',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1.5rem)',
+      }}
+    >
+      <div className="bg-slate-900 border-2 border-slate-800 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-full">
         {/* Header Hero Gradient */}
-        <div className="relative p-6 bg-gradient-to-br from-amber-950/80 via-slate-900 to-slate-900 border-b border-slate-800">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-black uppercase tracking-wider text-amber-400 flex items-center gap-2">
-              <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
-              Daily Consistency Streak
-            </span>
-
+        <div className="relative p-4 sm:p-6 bg-gradient-to-br from-amber-950/80 via-slate-900 to-slate-900 border-b border-slate-800 shrink-0">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                onClick={onClose}
+                className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1 min-h-[48px] min-w-[48px] justify-center shrink-0"
+                title="Back to Home Dashboard"
+              >
+                <span className="text-emerald-400 font-black text-sm">← Back</span>
+              </button>
+
+              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5 truncate">
+                <Flame className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
+                Streak Details
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <button
+                type="button"
                 onClick={handleSpeakStreak}
-                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 cursor-pointer"
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 cursor-pointer min-h-[48px] min-w-[48px] flex items-center justify-center"
                 title="Hear streak status"
               >
                 {isSpeaking ? <VolumeX className="w-5 h-5 animate-spin text-rose-400" /> : <Volume2 className="w-5 h-5" />}
@@ -67,7 +84,8 @@ export const StreakCounterModal: React.FC<StreakCounterModalProps> = ({
 
               <button
                 onClick={onClose}
-                className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer min-h-[48px] min-w-[48px] flex items-center justify-center"
+                title="Close Streak Modal"
               >
                 <X className="w-6 h-6" />
               </button>

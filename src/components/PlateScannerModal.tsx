@@ -562,28 +562,43 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1rem)',
+      }}
+    >
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-full flex flex-col shadow-2xl overflow-hidden my-auto">
         {/* Modal Top Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-slate-950/70">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+        <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-800 bg-slate-950/80 gap-2 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1 min-h-[48px] min-w-[48px] justify-center shrink-0"
+              title="Back to Home Dashboard"
+            >
+              <span className="text-emerald-400 font-black text-sm">← Back</span>
+            </button>
+
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
               <Camera className="w-4 h-4 text-emerald-400" />
             </div>
-            <div>
-              <h3 className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
-                AI Food Recognition &amp; Calorie Estimator
+            <div className="min-w-0">
+              <h3 className="font-bold text-white text-sm sm:text-lg flex items-center gap-2 truncate">
+                <span>AI Food Plate Scanner</span>
               </h3>
-              <p className="text-xs text-slate-400">Powered by Multimodal Gemini Computer Vision</p>
+              <p className="text-[11px] text-slate-400 truncate">Multimodal Gemini Vision</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Meal Type Selector */}
             <select
               value={mealType}
               onChange={(e) => setMealType(e.target.value as MealType)}
-              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-emerald-500"
+              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-emerald-500 min-h-[44px]"
             >
               <option value="Breakfast">Breakfast</option>
               <option value="Lunch">Lunch</option>
@@ -593,9 +608,10 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer min-h-[48px] min-w-[48px] flex items-center justify-center"
+              title="Close Scanner"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
           </div>
         </div>

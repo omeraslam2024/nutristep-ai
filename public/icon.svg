@@ -1,34 +1,125 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#020617"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+    <!-- Apple Body Gradient -->
+    <linearGradient id="appleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#76c928" />
+      <stop offset="45%" stop-color="#58b024" />
+      <stop offset="100%" stop-color="#1b7a3d" />
     </linearGradient>
-    <linearGradient id="flameGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#10b981"/>
-      <stop offset="50%" stop-color="#06b6d4"/>
-      <stop offset="100%" stop-color="#38bdf8"/>
+
+    <!-- Leaf Gradients -->
+    <linearGradient id="leafLeft" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#145a32" />
+      <stop offset="100%" stop-color="#229954" />
     </linearGradient>
-    <linearGradient id="innerGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#fbbf24"/>
-      <stop offset="100%" stop-color="#34d399"/>
+
+    <linearGradient id="leafRight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#48a623" />
+      <stop offset="100%" stop-color="#7cd62e" />
     </linearGradient>
+
+    <!-- Shadow filter for clean depth -->
+    <filter id="subtleDrop" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0c4e34" flood-opacity="0.18" />
+    </filter>
   </defs>
 
-  <!-- Background rounded squircle with safe padding for maskable mode -->
-  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
-  <rect x="16" y="16" width="480" height="480" rx="98" fill="none" stroke="#1e293b" stroke-width="4"/>
+  <g transform="translate(0, -10)">
+    <!-- Top Left Leaf (Darker green) -->
+    <path
+      d="M245 130 C225 70, 160 55, 140 60 C150 100, 190 135, 245 130 Z"
+      fill="url(#leafLeft)"
+    />
+    <!-- Center Leaf Ridge -->
+    <path
+      d="M150 72 C190 95, 220 115, 240 128"
+      stroke="#145a32"
+      stroke-width="3"
+      stroke-linecap="round"
+      fill="none"
+      opacity="0.4"
+    />
 
-  <!-- Outer dynamic health ring -->
-  <circle cx="256" cy="256" r="160" fill="none" stroke="#1e293b" stroke-width="20" stroke-linecap="round"/>
-  <circle cx="256" cy="256" r="160" fill="none" stroke="url(#flameGrad)" stroke-width="20" stroke-linecap="round" stroke-dasharray="750" stroke-dashoffset="180"/>
+    <!-- Top Right Leaf (Lighter lime green) -->
+    <path
+      d="M245 125 C255 75, 305 60, 335 70 C330 105, 295 135, 245 125 Z"
+      fill="url(#leafRight)"
+    />
 
-  <!-- Flame & Leaf Central Icon -->
-  <path d="M256 120 C220 180 180 230 180 290 C180 340 215 380 256 380 C297 380 332 340 332 290 C332 230 292 180 256 120 Z" fill="url(#flameGrad)" />
-  
-  <!-- Inner Energetic Ember -->
-  <path d="M256 220 C240 255 220 280 220 310 C220 335 236 355 256 355 C276 355 292 335 292 310 C292 280 272 255 256 220 Z" fill="url(#innerGrad)" />
+    <!-- Main Apple Body -->
+    <!-- Curving around the left and base, framing the climbing athlete -->
+    <path
+      d="M235 135
+         C200 130, 130 160, 115 220
+         C95 300, 125 390, 180 425
+         C220 450, 260 440, 275 425
+         C285 415, 290 405, 280 400
+         C230 400, 190 350, 190 280
+         C190 220, 230 160, 295 140
+         C270 132, 250 132, 235 135 Z"
+      fill="url(#appleGrad)"
+      filter="url(#subtleDrop)"
+    />
 
-  <!-- Footprint / Droplet Accent -->
-  <circle cx="256" cy="395" r="12" fill="#38bdf8"/>
+    <!-- Additional Apple Volume / Shoulder -->
+    <path
+      d="M115 220
+         C100 280, 120 360, 165 410
+         C140 370, 130 300, 145 240
+         C155 200, 185 165, 225 145
+         C170 155, 130 180, 115 220 Z"
+      fill="#145a32"
+      opacity="0.15"
+    />
+
+    <!-- 3 Rising Progress Chart Step Bars -->
+    <!-- Bar 1 (Lowest) -->
+    <rect x="295" y="360" width="28" height="65" rx="10" fill="#58b024" />
+    <!-- Bar 2 (Medium) -->
+    <rect x="333" y="320" width="28" height="105" rx="10" fill="#58b024" />
+    <!-- Bar 3 (Highest) -->
+    <rect x="371" y="275" width="28" height="150" rx="10" fill="#58b024" />
+
+    <!-- White Negative-Space Outline around Athlete for Separation -->
+    <!-- Runner / Climber Silhouette -->
+    <g fill="#0c4e34">
+      <!-- Head -->
+      <circle cx="330" cy="170" r="24" />
+
+      <!-- Dynamic Stepping / Running Body -->
+      <!-- Torso & Arms -->
+      <path
+        d="M322 198
+           C300 205, 265 225, 250 250
+           C240 265, 245 275, 260 270
+           C275 265, 295 245, 315 235
+           L300 285
+           L330 310
+           L355 270
+           L340 230
+           C355 235, 375 250, 390 240
+           C398 235, 390 220, 375 215
+           C355 210, 335 200, 322 198 Z"
+      />
+
+      <!-- Forward Bent Stepping Leg (Climbing onto bar) -->
+      <path
+        d="M330 305
+           L355 330
+           L345 380
+           L325 380
+           L335 340
+           L315 320 Z"
+        stroke-linejoin="round"
+      />
+
+      <!-- Rear Trailing Leg (Extended back from stride) -->
+      <path
+        d="M305 285
+           C285 315, 255 370, 220 400
+           C212 407, 205 398, 215 390
+           C245 360, 275 310, 295 275 Z"
+      />
+    </g>
+  </g>
 </svg>

@@ -80,27 +80,43 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      style={{
+        paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1rem)',
+      }}
+    >
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-full flex flex-col shadow-2xl overflow-hidden my-auto">
         {/* Top Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-slate-950/80">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+        <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-800 bg-slate-950/80 gap-2 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1 min-h-[48px] min-w-[48px] justify-center shrink-0"
+              title="Back to Home Dashboard"
+            >
+              <span className="text-emerald-400 font-black text-sm">← Back</span>
+            </button>
+
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
               <User className="w-4 h-4 text-emerald-400" />
             </div>
-            <div>
-              <h3 className="font-bold text-white text-base sm:text-lg">
-                Personalization &amp; BMR / TDEE Setup
+            <div className="min-w-0">
+              <h3 className="font-bold text-white text-sm sm:text-lg truncate">
+                Profile &amp; Health Goals
               </h3>
-              <p className="text-xs text-slate-400">Mifflin-St Jeor Scientific Energy Formula</p>
+              <p className="text-[11px] text-slate-400 truncate">BMR &amp; Calorie Targets</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors cursor-pointer min-h-[48px] min-w-[48px] flex items-center justify-center shrink-0"
+            title="Close Settings"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 

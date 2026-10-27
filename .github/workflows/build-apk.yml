@@ -50,16 +50,27 @@ jobs:
       - name: Create GitHub Release with APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.2
-          name: NutriStep AI v1.1.2 - Status Bar & Menu Proportion Fix
+          tag_name: v1.2.0
+          name: NutriStep AI v1.2.0 - Official Logo & Production Pedometer Engine
           body: |
-            ## 📱 NutriStep AI v1.1.2 (Status Bar & Menu Alignment Fix)
+            ## 📱 NutriStep AI v1.2.0 (Play Store Ready Production Release)
             
-            ### 🔧 What was Fixed in this Release:
-            - **Status Bar & Signal Bar Collision Fixed:** Added safe-area padding at the top of the header so NutriStep AI, Streak, and buttons now sit comfortably below the clock, camera hole, WiFi, and battery indicators.
-            - **100% Proportional Menu Tabs:** Replaced the scrolling tabs with a clean 3-column segmented grid (`🍽️ Food` | `👟 Steps` | `📈 Reports`). No more clipped words or awkward edge cuts!
-            - **7-Day Streak Alignment:** The mini 7-day flame history is now a neat 7-column grid that fits inside the card without overflowing.
-            - **Full-Screen Responsive:** Zero white spaces, zero horizontal cutoff, edge-to-edge dark theme.
+            ### 🍎 Official Healthy Progress Logo Integration:
+            - **Native App Launcher Icon:** Replaced all placeholder icons across Android `mipmap` densities with the official **NutriStep Healthy Progress Logo** (Apple + climbing athlete + rising progress bars).
+            - **Header & Branding:** The official brand icon is now displayed in the top header and splash.
+            
+            ### 👟 Pedometer / Step Counter Overhaul:
+            - **Biomechanical Cadence Filtering:** Implemented linear acceleration isolation (removing 1G gravity bias) and cadence validation ($380\text{ms} - 1600\text{ms}$).
+            - **Zero False Counts When Stationary:** The sensor requires continuous rhythmic footfalls, ignoring table vibrations, car movement, and holding the phone.
+            - **Pause / Resume Controls:** Added 1-tap pause button for when sitting or driving.
+            
+            ### 🧭 Universal "Back to Home" Navigation:
+            - Added universal `← Back to Home` buttons to all interior views (Daily Steps, Analytics Reports, Coach Drawer, Streak Modal, Plate Scanner, and Profile Settings).
+            - Maintained pinned bottom navigation for 1-tap tab switching.
+            
+            ### 🎨 UI Scaling & Safe-Area Polishing:
+            - Fixed Coach drawer scaling, text clipping, and safe-area top/bottom insets.
+            - Clean 100% proportional tab bars and 7-day flame history.
             
             ### 📲 How to Install the Update on Pixel 7:
             1. Tap **`app-debug.apk`** below to download directly to your phone.

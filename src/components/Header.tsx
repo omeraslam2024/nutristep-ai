@@ -63,12 +63,10 @@ export const Header: React.FC<HeaderProps> = ({
       }}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-        {/* Brand logo & Profile Greeting with Big Visual Streak Counter */}
+        {/* Official NutriStep Healthy Progress Logo & Profile Greeting */}
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-400 p-0.5 shadow-lg shadow-emerald-500/25 flex items-center justify-center shrink-0">
-            <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-              <Flame className="w-7 h-7 text-emerald-400 animate-pulse" />
-            </div>
+          <div className="w-12 h-12 rounded-2xl bg-white p-1 shadow-lg shadow-emerald-500/25 flex items-center justify-center shrink-0 border border-emerald-500/30">
+            <img src="/icon.svg" alt="NutriStep Logo" className="w-full h-full object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-2">

@@ -81,49 +81,55 @@ define(['./workbox-afac4cd2'], (function (workbox) { 'use strict';
     "revision": "1872c500de691dce40960bb85481de07"
   }, {
     "url": "pwa-maskable-512x512.png",
-    "revision": "b53c486d767f4fd32f3a8eded9e0ba80"
+    "revision": "227cacde19420da5c47bd794433dc6cd"
   }, {
     "url": "pwa-512x512.png",
-    "revision": "b53c486d767f4fd32f3a8eded9e0ba80"
+    "revision": "0faa1a82ddb5913e03ba9884dad29baf"
   }, {
     "url": "pwa-192x192.png",
-    "revision": "5ef7532712c7f40909409ec28f843ed2"
+    "revision": "2531767a3c592ee335f6ea83a08a5d17"
+  }, {
+    "url": "nutristep-logo.svg",
+    "revision": "4b407d0915814dca7cd9df6ae495d51e"
+  }, {
+    "url": "nutristep-logo.png",
+    "revision": "184fc91f01c91bdd2a7150e60a435296"
   }, {
     "url": "index.html",
-    "revision": "f563c3c3206aa51646f6653136bbcc24"
+    "revision": "fe40753934702783e8f67197bfbed3f4"
   }, {
     "url": "icon.svg",
-    "revision": "0620fe101297efd4ef6d9c6be300f8dd"
+    "revision": "9dc1ab50a1ec8c2d6ff37135953fc796"
   }, {
     "url": "favicon.ico",
     "revision": "9028c8293af4afa7395d80fe6d28c0ba"
   }, {
     "url": "apple-touch-icon.png",
-    "revision": "3fbbdd2128a709d50c5fc331aa4651f5"
+    "revision": "077c463441c184f169ce11da78235c08"
   }, {
-    "url": "assets/index-CPwDhDd3.css",
+    "url": "assets/index-nmy2I1Yd.js",
     "revision": null
   }, {
-    "url": "assets/index-BWGAEIV_.js",
+    "url": "assets/index-DZxiSVJw.css",
     "revision": null
   }, {
     "url": "apple-touch-icon.png",
-    "revision": "3fbbdd2128a709d50c5fc331aa4651f5"
+    "revision": "077c463441c184f169ce11da78235c08"
   }, {
     "url": "favicon.ico",
     "revision": "9028c8293af4afa7395d80fe6d28c0ba"
   }, {
     "url": "icon.svg",
-    "revision": "0620fe101297efd4ef6d9c6be300f8dd"
+    "revision": "9dc1ab50a1ec8c2d6ff37135953fc796"
   }, {
     "url": "pwa-192x192.png",
-    "revision": "5ef7532712c7f40909409ec28f843ed2"
+    "revision": "2531767a3c592ee335f6ea83a08a5d17"
   }, {
     "url": "pwa-512x512.png",
-    "revision": "b53c486d767f4fd32f3a8eded9e0ba80"
+    "revision": "0faa1a82ddb5913e03ba9884dad29baf"
   }, {
     "url": "pwa-maskable-512x512.png",
-    "revision": "b53c486d767f4fd32f3a8eded9e0ba80"
+    "revision": "227cacde19420da5c47bd794433dc6cd"
   }, {
     "url": "manifest.webmanifest",
     "revision": "3ff6724fbe40e38b5b87c8e053e21b4e"
