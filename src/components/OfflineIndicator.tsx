@@ -29,7 +29,7 @@ export const OfflineIndicator: React.FC = () => {
   // Toast when restored
   if (isOnline && showRestoredToast) {
     return (
-      <div className="fixed bottom-16 sm:bottom-6 left-4 z-50 flex items-center gap-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/40 px-3.5 py-2 text-xs font-semibold text-emerald-200 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-300">
+      <div className="fixed bottom-16 sm:bottom-6 left-4 z-50 flex items-center gap-2.5 rounded-xl bg-emerald-950/90 border border-emerald-500/40 px-3.5 py-2 text-xs font-semibold text-emerald-200 shadow-xl backdrop-blur-md">
         <CheckCircle2 className="w-4 h-4 text-emerald-400" />
         <span>Back Online — Local data synchronized.</span>
       </div>
@@ -38,7 +38,7 @@ export const OfflineIndicator: React.FC = () => {
 
   // Active offline banner
   return (
-    <div className="fixed bottom-16 sm:bottom-6 left-4 right-4 sm:right-auto z-50 flex items-center justify-between sm:justify-start gap-2.5 rounded-xl bg-amber-950/90 border border-amber-500/40 px-3.5 py-2 text-xs font-semibold text-amber-200 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-300">
+    <div className="fixed bottom-16 sm:bottom-6 left-4 right-4 sm:right-auto z-50 flex items-center justify-between sm:justify-start gap-2.5 rounded-xl bg-amber-950/90 border border-amber-500/40 px-3.5 py-2 text-xs font-semibold text-amber-200 shadow-xl backdrop-blur-md">
       <div className="flex items-center gap-2">
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>

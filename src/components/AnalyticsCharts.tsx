@@ -62,20 +62,13 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 lg:p-6 space-y-6 shadow-xl">
+    <div className="surface p-5 lg:p-6 space-y-6">
       {/* Header with Range & Metric tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
-        <div>
-          <span className="text-xs uppercase tracking-widest font-bold text-indigo-400">
-            Module C &bull; Weekly &amp; Monthly Insights
-          </span>
-          <h3 className="text-xl font-black text-white tracking-tight mt-0.5">
-            Trends &amp; Performance Analytics
-          </h3>
-        </div>
+        <h3 className="text-lg font-bold text-white">Last 7 days</h3>
 
         {/* Tab switcher */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-950/70 border border-slate-800 rounded-xl self-start sm:self-auto">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-950/70 border border-slate-800 rounded-xl self-start sm:self-auto overflow-x-auto no-scrollbar max-w-full">
           <button
             onClick={() => setActiveTab('calories')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
@@ -123,7 +116,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3.5">
           <span className="text-[11px] text-slate-400 font-semibold block">7-Day Avg Steps</span>
-          <span className="text-xl sm:text-2xl font-black text-cyan-300">
+          <span className="text-xl sm:text-2xl font-bold text-cyan-300">
             {avgSteps.toLocaleString()}
           </span>
           <span className="text-[10px] text-slate-500 block">goal: {stepGoal.toLocaleString()}</span>
@@ -131,7 +124,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
         <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3.5">
           <span className="text-[11px] text-slate-400 font-semibold block">7-Day Avg Intake</span>
-          <span className="text-xl sm:text-2xl font-black text-amber-300">
+          <span className="text-xl sm:text-2xl font-bold text-amber-300">
             {avgCalsConsumed.toLocaleString()}
           </span>
           <span className="text-[10px] text-slate-500 block">target: {targetCals.toLocaleString()} kcal</span>
@@ -139,7 +132,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
         <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3.5">
           <span className="text-[11px] text-slate-400 font-semibold block">7-Day Avg Burn</span>
-          <span className="text-xl sm:text-2xl font-black text-emerald-300">
+          <span className="text-xl sm:text-2xl font-bold text-emerald-300">
             +{avgActiveBurn}
           </span>
           <span className="text-[10px] text-slate-500 block">kcal active steps</span>
@@ -324,13 +317,13 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
             <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-between">
               <div>
                 <span className="text-xs text-slate-400">Current Weight</span>
-                <div className="text-2xl font-black text-white mt-0.5">
+                <div className="text-2xl font-bold text-white mt-0.5">
                   {profile.weightKg} {profile.unitSystem === 'imperial' ? 'lbs' : 'kg'}
                 </div>
               </div>
               <div className="text-right">
                 <span className="text-xs text-slate-400">Target Goal</span>
-                <div className="text-2xl font-black text-purple-300 mt-0.5">
+                <div className="text-2xl font-bold text-purple-300 mt-0.5">
                   {profile.targetWeightKg} {profile.unitSystem === 'imperial' ? 'lbs' : 'kg'}
                 </div>
               </div>

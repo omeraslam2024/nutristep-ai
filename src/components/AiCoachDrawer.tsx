@@ -176,9 +176,9 @@ You currently have **${Math.round(remainingCalories)} kcal** and **${remainingPr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/80 backdrop-blur-sm">
       <div
-        className="w-full max-w-lg bg-slate-900 border-l border-slate-800 h-full flex flex-col shadow-2xl overflow-hidden"
+        className="w-full max-w-lg bg-slate-900 border-l border-slate-800 h-full flex flex-col shadow-lg overflow-hidden"
         style={{
           paddingTop: 'max(env(safe-area-inset-top, 0px), 2.5rem)',
           paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1rem)',
@@ -195,7 +195,7 @@ You currently have **${Math.round(remainingCalories)} kcal** and **${remainingPr
               title="Back to Home Dashboard"
             >
               <ArrowLeft className="w-5 h-5 text-purple-400" />
-              <span className="text-xs font-black hidden xs:inline">Back</span>
+              <span className="text-xs font-bold hidden xs:inline">Back</span>
             </button>
 
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
@@ -203,7 +203,7 @@ You currently have **${Math.round(remainingCalories)} kcal** and **${remainingPr
             </div>
 
             <div className="min-w-0">
-              <h3 className="font-black text-white text-sm sm:text-base flex items-center gap-1.5 truncate">
+              <h3 className="font-bold text-white text-sm sm:text-base flex items-center gap-1.5 truncate">
                 <span>Coach NutriStep</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold shrink-0">
                   AI
@@ -226,28 +226,28 @@ You currently have **${Math.round(remainingCalories)} kcal** and **${remainingPr
         <div className="bg-slate-950/90 px-3 py-2 border-b border-slate-800/80 grid grid-cols-4 gap-1 sm:gap-2 text-xs shrink-0">
           <div className="flex flex-col items-center justify-center p-1 rounded-lg bg-slate-900 border border-slate-800 text-center min-w-0">
             <span className="text-[10px] font-bold text-slate-400 block truncate">Rem. Kcal</span>
-            <span className="text-xs sm:text-sm font-black text-emerald-400 truncate">
+            <span className="text-xs sm:text-sm font-bold text-emerald-400 truncate">
               {Math.round(remainingCalories)}
             </span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-1 rounded-lg bg-slate-900 border border-slate-800 text-center min-w-0">
             <span className="text-[10px] font-bold text-slate-400 block truncate">Protein</span>
-            <span className="text-xs sm:text-sm font-black text-rose-300 truncate">
+            <span className="text-xs sm:text-sm font-bold text-rose-300 truncate">
               {remainingProtein}g
             </span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-1 rounded-lg bg-slate-900 border border-slate-800 text-center min-w-0">
             <span className="text-[10px] font-bold text-slate-400 block truncate">Steps</span>
-            <span className="text-xs sm:text-sm font-black text-cyan-300 truncate">
+            <span className="text-xs sm:text-sm font-bold text-cyan-300 truncate">
               {steps.toLocaleString()}
             </span>
           </div>
 
           <div className="flex flex-col items-center justify-center p-1 rounded-lg bg-slate-900 border border-slate-800 text-center min-w-0">
             <span className="text-[10px] font-bold text-slate-400 block truncate">Water</span>
-            <span className="text-xs sm:text-sm font-black text-sky-300 truncate">
+            <span className="text-xs sm:text-sm font-bold text-sky-300 truncate">
               {(waterMl / 1000).toFixed(1)}L
             </span>
           </div>
@@ -263,7 +263,7 @@ You currently have **${Math.round(remainingCalories)} kcal** and **${remainingPr
               <div
                 className={`max-w-[88%] rounded-2xl p-3 sm:p-3.5 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words ${
                   msg.role === 'user'
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black rounded-tr-none shadow-md'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold rounded-tr-none shadow-md'
                     : 'bg-slate-950/90 border border-slate-800 text-slate-200 rounded-tl-none font-medium'
                 }`}
               >
@@ -287,7 +287,7 @@ You currently have **${Math.round(remainingCalories)} kcal** and **${remainingPr
 
         {/* Quick prompt suggestions (Horizontal Swipe Chips, Never Multi-Line Disasters) */}
         <div className="px-3 py-2 border-t border-slate-800/80 bg-slate-950/60 shrink-0">
-          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
             Tap to Ask Coach:
           </span>
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">

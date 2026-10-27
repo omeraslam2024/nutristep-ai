@@ -1,9 +1,133 @@
 @import "tailwindcss";
 
+/*
+ * NutriStep design tokens
+ * ───────────────────────
+ * The screens are written against Tailwind's slate ramp for surfaces/text and named hues for
+ * accents. This file re-points those ramps per theme, so every screen switches between light and
+ * dark from one place:
+ *
+ *   slate-950  page background        slate-900  card surface
+ *   slate-800  inset surface / border slate-700  strong border
+ *   slate-400  secondary text         white      primary text ("ink")
+ *   emerald    brand green (from the logo)   teal  brand lime, used in brand gradients
+ *   -300/-400 of a hue = accent text; -500 = accent fill/tint; -900/-950 = tinted card background
+ *   brand-lime + .on-brand = primary buttons (same in both themes)
+ *
+ * Contrast: secondary text ≥ 4.5:1 on cards in both themes; accent text uses the darker 700-level
+ * shade in light mode for the same reason (WCAG AA).
+ */
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-card: 1.5rem;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Brand, sampled from nutristep-logo.png */
+  --color-brand-lime: #5bb324;
+  --color-brand-forest: #0a4a32;
+  --color-brand-leaf: #1b7a42;
+}
+
+/* ── Dark theme (default) ─────────────────────────────────────────────── */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-slate-50: #f6f8f5;
+  --color-slate-100: #eef2ee;
+  --color-slate-200: #dce3dd;
+  --color-slate-300: #c2ccc4;
+  --color-slate-400: #9aa69d;
+  --color-slate-500: #808c83;
+  --color-slate-600: #4a554d;
+  --color-slate-700: #2e3832;
+  --color-slate-800: #212a24;
+  --color-slate-900: #151b17;
+  --color-slate-950: #0b100d;
+  --color-white: #ffffff;
+
+  --color-emerald-100: #e3f5d3;
+  --color-emerald-200: #cdefb0;
+  --color-emerald-300: #a6e07a;
+  --color-emerald-400: #7ccb45;
+  --color-emerald-500: #5bb324;
+  --color-emerald-600: #47951b;
+  --color-emerald-700: #357316;
+  --color-emerald-900: #16330c;
+  --color-emerald-950: #0f2a0a;
+
+  --color-teal-300: #b5e36b;
+  --color-teal-400: #94d04a;
+  --color-teal-500: #7bbf35;
+
+  --app-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+}
+
+/* ── Light theme ──────────────────────────────────────────────────────── */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-slate-50: #0f1a13;
+  --color-slate-100: #18221b;
+  --color-slate-200: #263027;
+  --color-slate-300: #3a4439;
+  --color-slate-400: #545e52;
+  --color-slate-500: #646e61;
+  --color-slate-600: #a3ad9f;
+  --color-slate-700: #d3dacf;
+  --color-slate-800: #e7ece3;
+  --color-slate-900: #ffffff;
+  --color-slate-950: #f4f6f0;
+  --color-white: #0f1a13;
+
+  --color-emerald-100: #24520f;
+  --color-emerald-200: #24520f;
+  --color-emerald-300: #2a5f12;
+  --color-emerald-400: #2f6b15;
+  --color-emerald-500: #2f7d1a;
+  --color-emerald-600: #276a15;
+  --color-emerald-700: #1f5511;
+  --color-emerald-900: #eef7e6;
+  --color-emerald-950: #f1f8ea;
+
+  --color-teal-300: #4f8f1e;
+  --color-teal-400: #437f18;
+  --color-teal-500: #3b7215;
+
+  /* Accent text shades → 700 level; tinted backgrounds → 50/100 level */
+  --color-amber-200: oklch(55.5% 0.163 48.998);
+  --color-amber-300: oklch(55.5% 0.163 48.998);
+  --color-amber-400: oklch(55.5% 0.163 48.998);
+  --color-amber-950: oklch(98.7% 0.022 95.277);
+  --color-orange-400: oklch(55.3% 0.195 38.402);
+  --color-cyan-200: oklch(52% 0.105 223.128);
+  --color-cyan-300: oklch(52% 0.105 223.128);
+  --color-cyan-400: oklch(52% 0.105 223.128);
+  --color-sky-200: oklch(50% 0.134 242.749);
+  --color-sky-300: oklch(50% 0.134 242.749);
+  --color-sky-400: oklch(50% 0.134 242.749);
+  --color-blue-300: oklch(48.8% 0.243 264.376);
+  --color-indigo-200: oklch(45.7% 0.24 277.023);
+  --color-indigo-300: oklch(45.7% 0.24 277.023);
+  --color-indigo-400: oklch(45.7% 0.24 277.023);
+  --color-indigo-950: oklch(96.2% 0.018 272.314);
+  --color-purple-200: oklch(49.6% 0.265 301.924);
+  --color-purple-300: oklch(49.6% 0.265 301.924);
+  --color-purple-400: oklch(49.6% 0.265 301.924);
+  --color-purple-900: oklch(94.6% 0.033 307.174);
+  --color-purple-950: oklch(97.7% 0.014 308.299);
+  --color-rose-200: oklch(51.4% 0.222 16.935);
+  --color-rose-300: oklch(51.4% 0.222 16.935);
+  --color-rose-400: oklch(51.4% 0.222 16.935);
+  --color-rose-950: oklch(96.9% 0.015 12.422);
+
+  --app-shadow: 0 1px 2px rgb(16 40 20 / 0.06), 0 10px 28px -14px rgb(16 40 20 / 0.18);
+}
+
 html,
 body {
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: var(--color-slate-950);
+  color: var(--color-white);
   width: 100%;
   max-width: 100vw;
   min-height: 100%;
@@ -11,7 +135,9 @@ body {
   padding: 0;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  transition: background-color 0.3s ease;
 }
 
 #root {
@@ -19,7 +145,20 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   min-height: 100vh;
-  background-color: #020617;
+  background-color: var(--color-slate-950);
+}
+
+/* Cards share one elevation recipe so the two themes stay consistent. */
+.surface {
+  background-color: var(--color-slate-900);
+  border: 1px solid var(--color-slate-800);
+  border-radius: var(--radius-card);
+  box-shadow: var(--app-shadow);
+}
+
+/* Text on a brand-lime fill, in both themes. */
+.on-brand {
+  color: #0b1f0f;
 }
 
 /* Custom scrollbar hiding helper */
@@ -29,4 +168,20 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-emerald-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

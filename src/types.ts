@@ -49,6 +49,8 @@ export interface UserProfile {
   activityLevel: ActivityLevel;
   goal: FitnessGoal;
   stepGoal: number;
+  /** Set once the first-run setup is finished. */
+  onboarded?: boolean;
   waterTargetMl?: number; // Target water in ml (default 2500ml = 10 glasses of 250ml)
   unitSystem: UnitSystem;
   customCalorieTarget?: number;

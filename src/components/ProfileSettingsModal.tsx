@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, User, Activity, Target, Flame, Heart, Check, Sliders, Shield } from 'lucide-react';
 import { UserProfile, FitnessGoal, ActivityLevel, UnitSystem } from '../types';
+import { shareFile } from '../utils/share';
+import { localDateKey } from '../utils/history';
 import {
   calculateBMR,
   calculateTDEE,
@@ -81,13 +83,13 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto"
       style={{
         paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)',
         paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1rem)',
       }}
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-full flex flex-col shadow-2xl overflow-hidden my-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl max-h-full flex flex-col shadow-lg overflow-hidden my-auto">
         {/* Top Header */}
         <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-800 bg-slate-950/80 gap-2 shrink-0">
           <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
@@ -97,7 +99,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
               className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1 min-h-[48px] min-w-[48px] justify-center shrink-0"
               title="Back to Home Dashboard"
             >
-              <span className="text-emerald-400 font-black text-sm">← Back</span>
+              <span className="text-emerald-400 font-bold text-sm">← Back</span>
             </button>
 
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
@@ -362,7 +364,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
               <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800">
                 <span className="text-[11px] text-emerald-400 block font-semibold">Recommended Target</span>
-                <span className="text-lg font-black text-emerald-300">{liveTargetCals} kcal</span>
+                <span className="text-lg font-bold text-emerald-300">{liveTargetCals} kcal</span>
               </div>
             </div>
 
@@ -378,14 +380,14 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-emerald-400" /> Offline Synchronization &amp; Storage
+                  <Shield className="w-3.5 h-3.5 text-emerald-400" /> Your data
                 </span>
                 <p className="text-[11px] text-slate-400 mt-0.5">
-                  All food logs, steps, water, and biometrics are saved safely offline in browser storage.
+                  Your meals, steps, water and body data are stored only on this phone.
                 </p>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                PWA Active
+                On this phone
               </span>
             </div>
 
@@ -393,20 +395,21 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const rawHistory = localStorage.getItem('nutristep_history_v1') || localStorage.getItem('nutristep_history') || '[]';
-                  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(
-                    JSON.stringify({ profile: formData, history: JSON.parse(rawHistory), exportedAt: new Date().toISOString() }, null, 2)
+                  const rawHistory = localStorage.getItem('nutristep_history_v1') || '[]';
+                  const json = JSON.stringify(
+                    { profile: formData, history: JSON.parse(rawHistory), exportedAt: new Date().toISOString() },
+                    null,
+                    2
                   );
-                  const downloadAnchor = document.createElement('a');
-                  downloadAnchor.setAttribute('href', dataStr);
-                  downloadAnchor.setAttribute('download', `nutristep-backup-${new Date().toISOString().split('T')[0]}.json`);
-                  document.body.appendChild(downloadAnchor);
-                  downloadAnchor.click();
-                  downloadAnchor.remove();
+                  shareFile(
+                    new Blob([json], { type: 'application/json' }),
+                    `nutristep-backup-${localDateKey()}.json`,
+                    'NutriStep data backup'
+                  ).catch(() => {});
                 }}
                 className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition-colors cursor-pointer"
               >
-                Download Data Backup (JSON)
+                Back up my data
               </button>
             </div>
           </div>

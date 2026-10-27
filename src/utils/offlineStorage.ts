@@ -12,6 +12,9 @@ export function loadStoredProfile(): UserProfile {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed.weightKg === 'number') {
+        // Profiles saved before onboarding existed: a real user's profile counts as set up; the old
+        // built-in demo person ("Alex Rivera") goes through setup.
+        if (parsed.onboarded === undefined) parsed.onboarded = parsed.name !== 'Alex Rivera';
         return parsed;
       }
     }
