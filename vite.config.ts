@@ -15,6 +15,8 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        // Registered from main.tsx, and only on the web: inside the APK the files are already local.
+        injectRegister: false,
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
