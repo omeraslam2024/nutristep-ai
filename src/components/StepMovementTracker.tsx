@@ -200,8 +200,8 @@ export const StepMovementTracker: React.FC<StepMovementTrackerProps> = ({
         <div className="lg:col-span-5 bg-slate-950/80 rounded-3xl p-6 border-2 border-cyan-500/30 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-xl">
           <Footprints className="w-10 h-10 text-cyan-400 mb-2 animate-bounce" />
 
-          {/* Huge Number */}
-          <div className="text-6xl sm:text-7xl font-black text-cyan-300 tracking-tighter">
+          {/* Responsive Large Number */}
+          <div className="text-5xl sm:text-6xl lg:text-7xl font-black text-cyan-300 tracking-tight truncate max-w-full">
             {currentSteps.toLocaleString()}
           </div>
           <span className="text-base sm:text-lg font-extrabold text-slate-300 mt-1">

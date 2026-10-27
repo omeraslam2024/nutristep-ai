@@ -94,13 +94,13 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons with Big Voice and Snap Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Big Voice Speak Button for users who prefer listening */}
+        {/* Action Buttons: Compact on mobile, rich on desktop */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Voice Speak Button */}
           <button
             type="button"
             onClick={handleToggleSpeak}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs sm:text-sm font-extrabold transition-all active:scale-95 cursor-pointer shadow-md ${
+            className={`p-2 sm:px-3 sm:py-2 rounded-xl border text-xs sm:text-sm font-extrabold transition-all active:scale-95 cursor-pointer shadow-sm ${
               isSpeaking
                 ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse'
                 : 'bg-indigo-600/20 hover:bg-indigo-600/30 border-indigo-500/40 text-indigo-200'
@@ -112,40 +112,39 @@ export const Header: React.FC<HeaderProps> = ({
             ) : (
               <Volume2 className="w-4 h-4 text-indigo-400 stroke-[2.5]" />
             )}
-            <span className="hidden md:inline">{isSpeaking ? 'Stop Voice' : 'Hear Status 🔊'}</span>
+            <span className="hidden md:inline ml-1.5">{isSpeaking ? 'Stop Voice' : 'Hear Status 🔊'}</span>
           </button>
 
-          {/* PWA Install Button */}
+          {/* PWA Install Button (desktop / tablet) */}
           <PWAInstallButton className="hidden sm:inline-flex" />
 
-          {/* Big Primary Snap Food Button */}
+          {/* Snap Food Button: visible on tablet/desktop, mobile has giant bottom button */}
           <button
             onClick={onOpenPlateScanner}
-            className="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-base shadow-lg shadow-emerald-500/30 transition-all active:scale-95 cursor-pointer"
+            className="hidden md:flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-base shadow-lg shadow-emerald-500/30 transition-all active:scale-95 cursor-pointer"
           >
             <Camera className="w-5 h-5 text-slate-950 stroke-[3]" />
             <span>📸 Snap Food</span>
           </button>
 
-          {/* AI Coach button */}
+          {/* AI Coach button (tablet/desktop) */}
           <button
             onClick={onOpenCoach}
-            className="relative flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 text-xs sm:text-sm font-bold transition-all group cursor-pointer"
+            className="hidden sm:flex relative items-center gap-1.5 px-3 py-2 rounded-xl bg-purple-950/60 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 text-xs sm:text-sm font-bold transition-all group cursor-pointer"
             title="Talk to Coach NutriStep"
           >
             <Sparkles className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform" />
             <span className="hidden lg:inline">Coach</span>
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full"></span>
           </button>
 
           {/* Settings button */}
           <button
             onClick={onOpenSettings}
-            className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer shrink-0"
             title="Profile & Settings"
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

@@ -143,7 +143,7 @@ export const NetCalorieHero: React.FC<NetCalorieHeroProps> = ({
             {/* Giant Numbers with High Contrast */}
             <div className="flex items-baseline gap-3 my-2">
               <span
-                className={`text-6xl sm:text-7xl font-black tracking-tighter ${
+                className={`text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight truncate max-w-full ${
                   isOverBudget ? 'text-rose-400' : 'text-emerald-400'
                 }`}
               >

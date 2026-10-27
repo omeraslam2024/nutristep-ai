@@ -7,4 +7,6 @@ coverage/
 .env*
 !.env.example
 *.tar.gz
-
+.aistudio/
+public/assets/aistudio/
+android/app/src/main/assets/public/assets/aistudio/

@@ -174,7 +174,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950 text-base">
       {/* Top Application Header */}
       <Header
         profile={profile}
@@ -191,56 +191,56 @@ export default function App() {
         }}
       />
 
-      {/* Primary Sub-Nav Bar - Large & Clear */}
-      <div className="bg-slate-900/90 border-b border-slate-800 px-4 lg:px-8 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
+      {/* Primary Sub-Nav Bar - Responsive & Scrollable on Mobile */}
+      <div className="bg-slate-900/90 border-b border-slate-800 px-3 sm:px-6 py-2.5 w-full max-w-full overflow-x-hidden">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-1 w-full sm:w-auto">
             <button
               onClick={() => setCurrentView('dashboard')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm sm:text-base font-black transition-all cursor-pointer shadow-sm ${
+              className={`shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-base font-black transition-all cursor-pointer shadow-sm ${
                 currentView === 'dashboard'
                   ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/40 shadow-emerald-500/10'
                   : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
               }`}
             >
-              <span className="text-xl">🍽️</span>
+              <span className="text-base sm:text-xl">🍽️</span>
               <span>Food &amp; Calories</span>
             </button>
 
             <button
               onClick={() => setCurrentView('movement')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm sm:text-base font-black transition-all cursor-pointer shadow-sm ${
+              className={`shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-base font-black transition-all cursor-pointer shadow-sm ${
                 currentView === 'movement'
                   ? 'bg-cyan-500/25 text-cyan-300 border-2 border-cyan-500/40 shadow-cyan-500/10'
                   : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
               }`}
             >
-              <span className="text-xl">👟</span>
+              <span className="text-base sm:text-xl">👟</span>
               <span>Daily Steps</span>
             </button>
 
             <button
               onClick={() => setCurrentView('analytics')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm sm:text-base font-black transition-all cursor-pointer shadow-sm ${
+              className={`shrink-0 flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-base font-black transition-all cursor-pointer shadow-sm ${
                 currentView === 'analytics'
                   ? 'bg-purple-500/25 text-purple-300 border-2 border-purple-500/40 shadow-purple-500/10'
                   : 'text-slate-300 hover:text-white bg-slate-800/60 border border-slate-700'
               }`}
             >
-              <span className="text-xl">📈</span>
+              <span className="text-base sm:text-xl">📈</span>
               <span>Reports</span>
             </button>
           </div>
 
-          <div className="hidden md:flex items-center gap-2 text-xs text-slate-400">
+          <div className="hidden md:flex items-center gap-2 text-xs text-slate-400 shrink-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Gemini Vision Model Online</span>
+            <span>Gemini Vision Online</span>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 pb-24 md:pb-12">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 pb-28 md:pb-12 overflow-x-hidden">
         {/* VIEW 1: Main Dashboard (Net Calories + Food Timeline + Quick Step Widget) */}
         {currentView === 'dashboard' && (
           <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">

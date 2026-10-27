@@ -50,13 +50,16 @@ jobs:
       - name: Create GitHub Release with APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.0
-          name: NutriStep AI v1.1.0 - Big Text & Graphical Edition (Pixel 7)
+          tag_name: v1.1.1
+          name: NutriStep AI v1.1.1 - Mobile Viewport & Screen Fit Fix
           body: |
-            ## 📱 NutriStep AI v1.1.0 (Pixel 7 Ready)
+            ## 📱 NutriStep AI v1.1.1 (Screen Fit & Mobile Layout Fix)
             
-            ### ✨ What's New in this Update:
-            - **Big Text & High Contrast:** Extra-large fonts, giant calorie meters, and clear numbers that are easy to read from a distance.
+            ### 🔧 Fixed in this Release:
+            - **Full Screen Fit:** Fixed the viewport scaling and horizontal overflow issue that caused the screen to cut in half and display a white stripe on the right.
+            - **Proper Mobile Layout:** Adjusted the top header and tabs to fit 100% of the mobile screen width with zero horizontal scrolling.
+            - **Dark Background Fix:** Ensured the background is dark across the entire phone display.
+            - **Retained All Features:** Big text, universal emojis, voice readouts, and the 1-tap snap food camera button.
             - **Ultra-Graphical & Low-Literacy Friendly:** Universal emojis (🍳 Breakfast, 🥗 Lunch, 🍲 Dinner, 🍎 Snacks, 👟 Steps, 💧 Water), traffic-light indicators (🟢 Green = On Track, 🔴 Red = Over limit).
             - **🔊 Voice Readout / Text-to-Speech:** Tap the "🔊 Hear Status" button anywhere to listen to your daily calories, meal summaries, and step count spoken aloud!
             - **Giant 1-Tap Navigation Bar:** Easy-to-tap 64px camera snap button and colorful bottom tabs.
