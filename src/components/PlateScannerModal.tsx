@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { apiUrl } from '../utils/api';
+import { QuickPicks } from './QuickPicks';
+import { FoodPick } from '../data/foods';
 import { AI_ENABLED } from '../utils/features';
 import { lookupBarcode } from '../utils/barcode';
 import {
@@ -47,9 +49,9 @@ const TABS: { id: TabMode; label: string; icon: React.ElementType; ai: boolean }
   { id: 'camera', label: 'Camera', icon: Camera, ai: true },
   { id: 'upload', label: 'Photo', icon: ImageIcon, ai: true },
   { id: 'voice_text', label: 'Describe', icon: Mic, ai: true },
-  { id: 'barcode', label: 'Barcode', icon: ScanBarcode, ai: false },
-  { id: 'manual', label: 'Manual', icon: PencilLine, ai: false },
   { id: 'samples', label: 'Quick picks', icon: Salad, ai: false },
+  { id: 'manual', label: 'Manual', icon: PencilLine, ai: false },
+  { id: 'barcode', label: 'Barcode', icon: ScanBarcode, ai: false },
 ];
 const VISIBLE_TABS = TABS.filter((t) => AI_ENABLED || !t.ai);
 
@@ -59,7 +61,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
   onMealLogged,
   defaultMealType = 'Lunch',
 }) => {
-  const [activeTab, setActiveTab] = useState<TabMode>(AI_ENABLED ? 'camera' : 'manual');
+  const [activeTab, setActiveTab] = useState<TabMode>(AI_ENABLED ? 'camera' : 'samples');
   const [manual, setManual] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '' });
   const [mealType, setMealType] = useState<MealType>(defaultMealType);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
@@ -213,6 +215,31 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
       sendImageForAnalysis(dataUrl, 'upload');
     };
     reader.readAsDataURL(file);
+  };
+
+  const handlePickFood = (food: FoodPick) => {
+    const item: MealItem = {
+      id: `pick-${Date.now()}`,
+      item_name: food.name,
+      estimated_weight_g: food.grams,
+      calories: food.kcal,
+      protein_g: food.protein,
+      carbs_g: food.carbs,
+      fat_g: food.fat,
+      fiber_g: 0,
+      sodium_mg: 0,
+      visual_clues: `${food.serving} · typical values`,
+    };
+    setAnalysisResult({
+      meal_name: food.name,
+      confidence_score: 0,
+      total_calories: food.kcal,
+      total_macros: { protein_g: food.protein, carbs_g: food.carbs, fat_g: food.fat, fiber_g: 0, sodium_mg: 0 },
+      detected_items: [item],
+      dietary_flags: [food.cuisine],
+      image_url: '',
+      source: 'sample',
+    });
   };
 
   const handleSelectSample = (sample: SamplePlate) => {
@@ -598,7 +625,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
         <div className="mx-auto mt-2.5 h-1.5 w-12 rounded-full bg-slate-700 sm:hidden" aria-hidden="true" />
         <div className="flex items-start justify-between px-5 pt-3 pb-3 gap-3 shrink-0">
           <div className="min-w-0">
-            <h2 id="logfood-title" className="font-display text-2xl font-semibold text-ink">
+            <h2 id="logfood-title" className="font-display text-[clamp(20px,6vw,24px)] font-semibold text-ink whitespace-nowrap">
               Log food
             </h2>
             <p className="text-xs text-slate-400 truncate">
@@ -858,7 +885,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                         <input
                           type="range"
                           min="10"
-                          max="500"
+                          max="1000"
                           step="5"
                           value={item.estimated_weight_g}
                           onChange={(e) =>
@@ -1005,56 +1032,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                 )}
 
                 {/* 1. Tab Content: Curated Sample Plates Gallery */}
-                {activeTab === 'samples' && (
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-emerald-400" />
-                        Quick picks
-                      </h4>
-                      <p className="text-xs text-slate-400">
-                        Common dishes with typical nutrition values. Adjust the portion before saving.
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                      {SAMPLE_PLATES.map((sample) => (
-                        <div
-                          key={sample.id}
-                          onClick={() => handleSelectSample(sample)}
-                          className="group bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg hover:shadow-emerald-500/10"
-                        >
-                          <div className="h-32 w-full overflow-hidden relative">
-                            <img
-                              src={sample.image_url}
-                              alt={sample.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-md text-[10px] font-bold text-emerald-300">
-                              {sample.mealType}
-                            </div>
-                          </div>
-                          <div className="p-3">
-                            <h5 className="font-bold text-white text-sm group-hover:text-emerald-400 transition-colors">
-                              {sample.title}
-                            </h5>
-                            <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
-                              {sample.subtitle}
-                            </p>
-                            <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-900 text-xs">
-                              <span className="font-bold text-amber-300">
-                                ~{sample.fallbackData.total_calories} kcal
-                              </span>
-                              <span className="text-slate-400 text-[11px]">
-                                {sample.fallbackData.total_macros.protein_g}g Protein
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {activeTab === 'samples' && <QuickPicks mealType={mealType} onPick={handlePickFood} />}
 
                 {/* 2. Tab Content: Live Camera Feed */}
                 {activeTab === 'camera' && (

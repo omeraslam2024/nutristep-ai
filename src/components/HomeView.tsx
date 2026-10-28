@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { ChevronRight, Flag, Flame, Footprints, Share2, Sparkles, Utensils, Volume2 } from 'lucide-react';
+import { ChevronRight, Flag, Flame, Footprints, Share2, Sparkles, Trophy, Utensils, Volume2 } from 'lucide-react';
 import { DayLog, LoggedMeal, MealType, UserProfile } from '../types';
 import { calculateMacroTargets, calculateTargetCalories, StreakInfo } from '../utils/healthCalculations';
 import { CountUp, ProgressRing } from './ui/ProgressRing';
@@ -19,6 +19,9 @@ interface HomeViewProps {
   onOpenStreak: () => void;
   onOpenProfile: () => void;
   onOpenCoach: () => void;
+  coachPreview: string;
+  onOpenChallenges: () => void;
+  challenge: { title: string; subtitle: string; pct: number } | null;
   onShare: () => void;
   onSpeak: () => void;
   onDeleteMeal: (id: string) => void;
@@ -53,7 +56,7 @@ export const HomeView: React.FC<HomeViewProps> = (p) => {
           <p className="text-sm text-slate-400">
             {new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' })}
           </p>
-          <h1 className="font-display text-[28px] leading-tight font-semibold text-ink truncate">
+          <h1 className="font-display text-[clamp(22px,7vw,28px)] leading-tight font-semibold text-ink break-words">
             Salaam{firstName ? `, ${firstName}` : ''}
           </h1>
         </div>
@@ -75,16 +78,16 @@ export const HomeView: React.FC<HomeViewProps> = (p) => {
         <div className="lg:col-span-7 space-y-4">
           {/* Energy card */}
           <motion.section {...enter(1)} className="surface p-5" aria-label="Today's calories">
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-4">
               <ProgressRing
                 value={budget > 0 ? eaten / budget : 0}
-                size={136}
-                stroke={14}
+                size={Math.round(Math.min(136, window.innerWidth * 0.34))}
+                stroke={13}
                 color={left < 0 ? 'var(--coral-ink)' : 'var(--coral)'}
                 track="var(--ring-track)"
                 label={`${Math.abs(left)} kilocalories ${left < 0 ? 'over' : 'left'} of ${budget}`}
               >
-                <CountUp value={Math.abs(left)} className="num text-[30px] font-semibold text-ink leading-none" />
+                <CountUp value={Math.abs(left)} className="num text-[clamp(22px,7vw,30px)] font-semibold text-ink leading-none" />
                 <span className="text-xs text-slate-400 mt-1">{left < 0 ? 'kcal over' : 'kcal left'}</span>
               </ProgressRing>
               <ul className="flex-1 min-w-0 space-y-3">
@@ -173,26 +176,50 @@ export const HomeView: React.FC<HomeViewProps> = (p) => {
             </motion.button>
           </div>
 
-          {AI_ENABLED && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <motion.button
               {...enter(4)}
               onClick={p.onOpenCoach}
-              className="surface w-full p-4 text-left flex items-center gap-4 cursor-pointer active:scale-[0.99] transition-transform"
+              className="surface w-full p-4 text-left flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-transform"
             >
               <span className="w-11 h-11 rounded-2xl bg-lilac text-lilac-ink flex items-center justify-center shrink-0">
                 <Sparkles className="w-5 h-5" />
               </span>
               <span className="flex-1 min-w-0">
-                <span className="block font-semibold text-ink">Ask your coach</span>
-                <span className="block text-xs text-slate-400 truncate">What to eat with {Math.max(0, left)} kcal left</span>
+                <span className="block font-semibold text-ink">Coach</span>
+                <span className="block text-xs text-slate-400 line-clamp-2">{p.coachPreview}</span>
               </span>
-              <ChevronRight className="w-5 h-5 text-slate-400" />
+              <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
             </motion.button>
-          )}
+
+            <motion.button
+              {...enter(5)}
+              onClick={p.onOpenChallenges}
+              className="surface w-full p-4 text-left flex items-center gap-3 cursor-pointer active:scale-[0.99] transition-transform"
+            >
+              <span className="w-11 h-11 rounded-2xl bg-butter text-butter-ink flex items-center justify-center shrink-0">
+                <Trophy className="w-5 h-5" />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block font-semibold text-ink">{p.challenge ? p.challenge.title : 'Challenges'}</span>
+                {p.challenge ? (
+                  <>
+                    <span className="block text-xs text-slate-400">{p.challenge.subtitle}</span>
+                    <span className="mt-1.5 block h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                      <span className="block h-full rounded-full bg-leaf" style={{ width: `${p.challenge.pct}%` }} />
+                    </span>
+                  </>
+                ) : (
+                  <span className="block text-xs text-slate-400">Start a 30, 60 or 90-day challenge</span>
+                )}
+              </span>
+              <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
+            </motion.button>
+          </div>
         </div>
 
         <div className="lg:col-span-5 space-y-4">
-          <motion.div {...enter(5)}>
+          <motion.div {...enter(6)}>
             <MealTimeline
               meals={today.meals}
               onOpenPlateScannerForType={p.onOpenScanner}
@@ -234,7 +261,7 @@ const Fact: React.FC<{ icon: React.ReactNode; tint: string; label: string; value
   <li className="flex items-center gap-3">
     <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tint}`}>{icon}</span>
     <span className="min-w-0">
-      <span className="block text-xs text-slate-400 truncate">{label}</span>
+      <span className="block text-xs text-slate-400 leading-tight">{label}</span>
       <span className="block num text-lg font-semibold text-ink leading-tight">{value}</span>
     </span>
   </li>

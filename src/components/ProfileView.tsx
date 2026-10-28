@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronRight, Footprints, Moon, Monitor, Pencil, Share2, Sun, Target } from 'lucide-react';
+import { ChevronRight, Footprints, Moon, Monitor, Pencil, Share2, Sun, Target, Trophy } from 'lucide-react';
 import { motion } from 'motion/react';
 import { UserProfile } from '../types';
 import { calculateTargetCalories, StreakInfo } from '../utils/healthCalculations';
@@ -14,6 +14,7 @@ interface ProfileViewProps {
   pedometer: ReturnType<typeof usePedometer>;
   onEditProfile: () => void;
   onShare: () => void;
+  onOpenChallenges: () => void;
 }
 
 const GOAL_LABEL: Record<UserProfile['goal'], string> = {
@@ -71,6 +72,7 @@ export const ProfileView: React.FC<ProfileViewProps> = (p) => {
             <Switch on={p.pedometer.enabled && p.pedometer.status !== 'denied'} disabled={p.pedometer.status === 'unsupported'} />
           }
         />
+        <Row icon={<Trophy className="w-5 h-5" />} tint="bg-butter text-butter-ink" title="Challenges" hint="30, 60 and 90-day challenges" onClick={p.onOpenChallenges} />
         <Row icon={<Share2 className="w-5 h-5" />} tint="bg-lilac text-lilac-ink" title="Share today's progress" hint="A picture for WhatsApp, Instagram and more" onClick={p.onShare} />
       </section>
 

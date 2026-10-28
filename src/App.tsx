@@ -7,6 +7,12 @@ import { ProfileView } from './components/ProfileView';
 import { Onboarding } from './components/Onboarding';
 import { PlateScannerModal } from './components/PlateScannerModal';
 import { AnalyticsCharts } from './components/AnalyticsCharts';
+import { StepsReport } from './components/StepsReport';
+import { CoachSheet } from './components/CoachSheet';
+import { ChallengesSheet } from './components/ChallengesSheet';
+import { buildCoachAdvice } from './utils/coach';
+import { ActiveChallenge, evaluateChallenge, loadChallenge, saveChallenge } from './utils/challenges';
+import { FoodPick } from './data/foods';
 import { AiCoachDrawer } from './components/AiCoachDrawer';
 import { ProfileSettingsModal } from './components/ProfileSettingsModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
@@ -37,6 +43,13 @@ export default function App() {
   const [coachInitialPrompt, setCoachInitialPrompt] = useState<string | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
+  const [isCoachTipsOpen, setIsCoachTipsOpen] = useState(false);
+  const [isChallengesOpen, setIsChallengesOpen] = useState(false);
+  const [challenge, setChallengeState] = useState<ActiveChallenge | null>(() => loadChallenge());
+  const setChallenge = (c: ActiveChallenge | null) => {
+    saveChallenge(c);
+    setChallengeState(c);
+  };
   const [toast, setToast] = useState<{ text: string; action?: { label: string; run: () => void } } | null>(null);
 
   // Android back: close the open sheet first, then return to Home, then leave the app.
@@ -45,6 +58,8 @@ export default function App() {
   useBackToClose(isCoachOpen, () => setIsCoachOpen(false));
   useBackToClose(isSettingsOpen, () => setIsSettingsOpen(false));
   useBackToClose(isStreakModalOpen, () => setIsStreakModalOpen(false));
+  useBackToClose(isCoachTipsOpen, () => setIsCoachTipsOpen(false));
+  useBackToClose(isChallengesOpen, () => setIsChallengesOpen(false));
 
   useEffect(() => saveStoredProfile(profile), [profile]);
   useEffect(() => saveStoredHistory(history), [history]);
@@ -67,6 +82,8 @@ export default function App() {
     Math.round(todayLog.meals.reduce((s, m) => s + m.total_macros[k], 0) * 10) / 10;
   const streakInfo = calculateStreakInfo(history, profile);
   const targetCalories = calculateTargetCalories(profile);
+  const coachAdvice = buildCoachAdvice(profile, todayLog, history);
+  const challengeProgress = challenge ? evaluateChallenge(challenge, history, profile) : null;
   const netRemaining = targetCalories - caloriesConsumed + todayLog.caloriesBurned;
 
   // Handlers: every write goes to today's log, rolling the day over first if midnight has passed.
@@ -80,6 +97,19 @@ export default function App() {
 
   const handleMealLogged = (newMeal: LoggedMeal) =>
     updateToday((today) => ({ ...today, meals: [...today.meals, newMeal] }));
+
+  const handleLogFood = (food: FoodPick, mealType: MealType) =>
+    handleMealLogged({
+      id: `meal-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      mealType,
+      meal_name: food.name,
+      total_calories: food.kcal,
+      total_macros: { protein_g: food.protein, carbs_g: food.carbs, fat_g: food.fat, fiber_g: 0 },
+      detected_items: [],
+      dietary_flags: [food.cuisine],
+      source: 'sample',
+    });
 
   const handleDeleteMeal = (mealId: string) =>
     updateToday((today) => ({ ...today, meals: today.meals.filter((m) => m.id !== mealId) }));
@@ -208,7 +238,20 @@ export default function App() {
                 onOpenSteps={() => goTo('steps')}
                 onOpenStreak={() => setIsStreakModalOpen(true)}
                 onOpenProfile={() => goTo('profile')}
-                onOpenCoach={() => askCoach(null)}
+                onOpenCoach={() => setIsCoachTipsOpen(true)}
+                coachPreview={coachAdvice.tips[0]?.title ?? `${coachAdvice.nextMeal} ideas for you`}
+                onOpenChallenges={() => setIsChallengesOpen(true)}
+                challenge={
+                  challengeProgress
+                    ? {
+                        title: challengeProgress.def.title,
+                        subtitle: challengeProgress.finished
+                          ? `Finished · ${challengeProgress.done} green days`
+                          : `Day ${challengeProgress.dayNumber} of ${challengeProgress.def.days} · ${challengeProgress.done} green`,
+                        pct: Math.round((challengeProgress.done / challengeProgress.def.days) * 100),
+                      }
+                    : null
+                }
                 onShare={shareToday}
                 onSpeak={speakSummary}
                 onDeleteMeal={handleDeleteMeal}
@@ -235,6 +278,7 @@ export default function App() {
                   <p className="text-sm text-slate-400">Trends</p>
                   <h1 className="font-display text-[28px] leading-tight font-semibold text-ink">Reports</h1>
                 </header>
+                <StepsReport history={history} stepGoal={profile.stepGoal || 10000} />
                 <AnalyticsCharts history={history} profile={profile} onLogWeight={handleLogWeight} />
               </div>
             )}
@@ -246,6 +290,7 @@ export default function App() {
                 onThemeChange={theme.setPref}
                 pedometer={pedometer}
                 onEditProfile={() => setIsSettingsOpen(true)}
+                onOpenChallenges={() => setIsChallengesOpen(true)}
                 onShare={shareToday}
               />
             )}
@@ -351,6 +396,28 @@ export default function App() {
             `Coach, I'm on a ${streakInfo.currentStreak}-day streak hitting both my calorie (${targetCalories} kcal) and step (${profile.stepGoal || 10000} steps) goals. How do I keep it going without burning out?`
           );
         }}
+      />
+
+      <CoachSheet
+        open={isCoachTipsOpen}
+        onClose={() => setIsCoachTipsOpen(false)}
+        profile={profile}
+        today={todayLog}
+        history={history}
+        onLog={handleLogFood}
+        onOpenAiChat={() => {
+          setIsCoachTipsOpen(false);
+          askCoach(null);
+        }}
+      />
+
+      <ChallengesSheet
+        open={isChallengesOpen}
+        onClose={() => setIsChallengesOpen(false)}
+        active={challenge}
+        onChange={setChallenge}
+        history={history}
+        profile={profile}
       />
 
       <OfflineIndicator />

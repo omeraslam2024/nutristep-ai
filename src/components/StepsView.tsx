@@ -60,7 +60,7 @@ export const StepsView: React.FC<StepsViewProps> = ({ profile, steps, hourlyStep
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-5 space-y-4">
           <section className="flex flex-col items-center py-2">
-            <ProgressRing value={steps / goal} size={232} stroke={22} color="var(--leaf)" track="var(--mint)" label={`${steps} of ${goal} steps`}>
+            <ProgressRing value={steps / goal} size={Math.round(Math.min(232, window.innerWidth * 0.66))} stroke={20} color="var(--leaf)" track="var(--mint)" label={`${steps} of ${goal} steps`}>
               <Footprints className="w-7 h-7 text-leaf-ink" />
               <CountUp value={steps} className="num text-[44px] font-semibold text-ink leading-none mt-1" />
               <span className="text-sm text-slate-400 mt-1">of {goal.toLocaleString()} steps</span>

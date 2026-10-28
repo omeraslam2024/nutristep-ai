@@ -6,6 +6,7 @@ import { calculateTargetCalories } from '../utils/healthCalculations';
 import { AI_ENABLED } from '../utils/features';
 import type { usePedometer } from '../utils/pedometer/usePedometer';
 import { CountUp, ProgressRing } from './ui/ProgressRing';
+import { BodyRows } from './ui/BodyRows';
 import { ThaliIllustration } from './ui/ThaliIllustration';
 
 interface OnboardingProps {
@@ -15,7 +16,7 @@ interface OnboardingProps {
 }
 
 const GOALS: { id: FitnessGoal; label: string; hint: string }[] = [
-  { id: 'lose_weight', label: 'Lose weight', hint: 'About 0.5 kg a week' },
+  { id: 'lose_weight', label: 'Lose weight', hint: 'About 0.5 kg (1 lb) a week' },
   { id: 'maintain', label: 'Stay healthy', hint: 'Keep my weight' },
   { id: 'gain_muscle', label: 'Build muscle', hint: 'Eat a little more' },
 ];
@@ -90,8 +91,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
         >
           {step === 0 && (
             <div className="flex-1 flex flex-col justify-center">
-              <ThaliIllustration size={Math.min(300, typeof window !== 'undefined' ? window.innerWidth - 60 : 300)} />
-              <h1 className="mt-8 font-display text-[32px] leading-[1.15] font-semibold text-ink">
+              <ThaliIllustration size={Math.round(Math.min(300, window.innerWidth - 60, window.innerHeight * 0.34))} />
+              <h1 className="mt-6 font-display text-[clamp(26px,7.5vw,32px)] leading-[1.15] font-semibold text-ink">
                 Every step earns you a little more to eat.
               </h1>
               <p className="mt-3 text-base text-slate-400 leading-relaxed">
@@ -127,30 +128,39 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
                   onChange={(v) => set('gender', v as UserProfile['gender'])}
                 />
               </Field>
-              <div className="grid grid-cols-3 gap-3">
-                <Field label="Age">
-                  <NumberInput value={p.age} onChange={(v) => set('age', v)} unit="yrs" />
-                </Field>
-                <Field label="Height">
-                  <NumberInput value={p.heightCm} onChange={(v) => set('heightCm', v)} unit="cm" />
-                </Field>
-                <Field label="Weight">
-                  <NumberInput value={p.weightKg} onChange={(v) => set('weightKg', v)} unit="kg" />
-                </Field>
-              </div>
+              <Field label="Units" group>
+                <Segmented
+                  value={p.unitSystem}
+                  options={[
+                    ['metric', 'kg · cm'],
+                    ['imperial', 'lb · ft, in'],
+                  ]}
+                  onChange={(v) => set('unitSystem', v as UserProfile['unitSystem'])}
+                />
+              </Field>
+              <BodyRows profile={p} onChange={(patch) => setP((prev) => ({ ...prev, ...patch }))} />
               <Field label="Your goal" group>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
                   {GOALS.map((g) => (
                     <button
                       key={g.id}
                       onClick={() => set('goal', g.id)}
                       aria-pressed={p.goal === g.id}
-                      className={`rounded-2xl p-3 text-left border transition-colors cursor-pointer min-h-[76px] ${
+                      className={`w-full rounded-2xl px-4 py-3 text-left border-2 transition-colors cursor-pointer flex items-center gap-3 ${
                         p.goal === g.id ? 'border-coral bg-peach' : 'border-transparent bg-slate-900'
                       }`}
                     >
-                      <span className="block text-sm font-bold text-white">{g.label}</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">{g.hint}</span>
+                      <span
+                        className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                          p.goal === g.id ? 'border-coral' : 'border-slate-600'
+                        }`}
+                      >
+                        {p.goal === g.id && <span className="w-2.5 h-2.5 rounded-full bg-coral" />}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-ink">{g.label}</span>
+                        <span className="block text-xs text-slate-400">{g.hint}</span>
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -201,8 +211,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
         </motion.div>
       </AnimatePresence>
 
-      {/* Actions */}
-      <div className="pt-4 space-y-2">
+      {/* Actions stay pinned to the bottom, so large font sizes never push them off screen. */}
+      <div className="sticky bottom-0 -mx-5 px-5 pt-3 pb-1 space-y-2 bg-slate-950">
         {step === 0 && <Primary onClick={() => go(1)}>Get started <ArrowRight className="w-5 h-5" /></Primary>}
         {step === 1 && (
           <Primary disabled={!aboutValid} onClick={() => go(2)}>
@@ -246,19 +256,6 @@ const Field: React.FC<{ label: string; group?: boolean; children: React.ReactNod
       {children}
     </label>
   );
-
-const NumberInput: React.FC<{ value: number; onChange: (v: number) => void; unit: string }> = ({ value, onChange, unit }) => (
-  <div className="flex items-center bg-slate-900 border-2 border-transparent rounded-2xl focus-within:border-coral">
-    <input
-      type="number"
-      inputMode="decimal"
-      value={Number.isFinite(value) && value > 0 ? value : ''}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className="w-full min-w-0 bg-transparent px-3.5 py-3.5 text-base text-white focus:outline-none min-h-[52px] tabular-nums"
-    />
-    <span className="pr-3 text-xs text-slate-400">{unit}</span>
-  </div>
-);
 
 const Segmented: React.FC<{ value: string; options: [string, string][]; onChange: (v: string) => void }> = ({
   value,
