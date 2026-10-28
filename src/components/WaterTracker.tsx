@@ -32,13 +32,13 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
   };
 
   return (
-    <section className="surface p-5 sm:p-6" aria-labelledby="water-title">
+    <section className="surface p-5" aria-labelledby="water-title">
       <div className="flex items-center gap-3">
-        <span className="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center">
+        <span className="w-10 h-10 rounded-xl bg-cloud text-cloud-ink flex items-center justify-center">
           <Droplets className="w-5 h-5" />
         </span>
         <div className="flex-1">
-          <h3 id="water-title" className="text-lg font-bold text-white leading-tight">
+          <h3 id="water-title" className="font-display text-xl font-semibold text-ink leading-tight">
             Water
           </h3>
           <p className="text-xs text-slate-400 tabular-nums">
@@ -57,7 +57,7 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
           <button
             onClick={() => setWater(waterMl + GLASS_ML)}
             aria-label="Add a glass (250 ml)"
-            className="w-11 h-11 rounded-full bg-sky-500 text-[#ffffff] flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
+            className="w-11 h-11 rounded-full btn-primary flex items-center justify-center active:scale-90 transition-transform cursor-pointer"
           >
             <Plus className="w-5 h-5" />
           </button>
@@ -76,7 +76,7 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({
               className="relative h-12 rounded-lg bg-slate-800 overflow-hidden cursor-pointer"
             >
               <motion.span
-                className="absolute inset-x-0 bottom-0 bg-sky-400"
+                className="absolute inset-x-0 bottom-0 bg-[#7cb8f5]"
                 initial={false}
                 animate={{ height: filled ? '100%' : '0%' }}
                 transition={{ type: 'spring', stiffness: 300, damping: 28, delay: filled ? i * 0.02 : 0 }}

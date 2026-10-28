@@ -27,6 +27,7 @@ import {
   ScanBarcode,
   PencilLine,
   Salad,
+  ChevronDown,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LoggedMeal, MealItem, MealType, SamplePlate } from '../types';
@@ -567,7 +568,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
       particleCount: 50,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#10b981', '#06b6d4', '#f59e0b'],
+      colors: ['#ff7e5f', '#2fae78', '#ffeaae', '#e2d8ff'],
     });
 
     // Reset and close
@@ -580,61 +581,57 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md overflow-y-auto"
-      style={{
-        paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)',
-        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1rem)',
-      }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-5 bg-[#2b2236]/50 backdrop-blur-sm"
+      style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 1.5rem)' }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-full flex flex-col shadow-lg overflow-hidden my-auto">
-        {/* Modal Top Header */}
-        <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-800 bg-slate-950/80 gap-2 shrink-0">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1 min-h-[48px] min-w-[48px] justify-center shrink-0"
-              title="Back to Home Dashboard"
-            >
-              <span className="text-emerald-400 font-bold text-sm">← Back</span>
-            </button>
-
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-              <Camera className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-white text-sm sm:text-lg flex items-center gap-2 truncate">
-                <span>Log food</span>
-              </h3>
-              <p className="text-[11px] text-slate-400 truncate">{AI_ENABLED ? 'Snap, describe, scan or type it' : 'Scan a barcode or type it'}</p>
-            </div>
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logfood-title"
+        className="bg-slate-900 w-full max-w-3xl max-h-full flex flex-col overflow-hidden rounded-t-[1.75rem] sm:rounded-[1.75rem] shadow-2xl"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <div className="mx-auto mt-2.5 h-1.5 w-12 rounded-full bg-slate-700 sm:hidden" aria-hidden="true" />
+        <div className="flex items-start justify-between px-5 pt-3 pb-3 gap-3 shrink-0">
+          <div className="min-w-0">
+            <h2 id="logfood-title" className="font-display text-2xl font-semibold text-ink">
+              Log food
+            </h2>
+            <p className="text-xs text-slate-400 truncate">
+              {mealType} · {new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
+            </p>
           </div>
-
           <div className="flex items-center gap-2 shrink-0">
-            {/* Meal Type Selector */}
-            <select
-              value={mealType}
-              onChange={(e) => setMealType(e.target.value as MealType)}
-              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-emerald-500 min-h-[44px]"
-            >
-              <option value="Breakfast">Breakfast</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Dinner">Dinner</option>
-              <option value="Snack">Snack</option>
-            </select>
-
+            <label className="relative">
+              <span className="sr-only">Meal</span>
+              <select
+                value={mealType}
+                onChange={(e) => setMealType(e.target.value as MealType)}
+                className="appearance-none bg-butter text-butter-ink text-sm font-semibold rounded-full pl-4 pr-8 h-10 focus:outline-none focus:ring-2 focus:ring-coral cursor-pointer"
+              >
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Snack">Snack</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-butter-ink" />
+            </label>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer min-h-[48px] min-w-[48px] flex items-center justify-center"
-              title="Close Scanner"
+              aria-label="Close"
+              className="w-10 h-10 rounded-full bg-slate-800 text-ink flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-5">
           {/* Error Banner if any */}
           {errorMessage && (
             <div className="bg-rose-950/40 border border-rose-800/80 rounded-xl p-3.5 flex items-start gap-3 text-rose-200 text-xs">
@@ -724,7 +721,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                   <div className="mt-4 pt-3 border-t border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xs uppercase font-semibold text-slate-400 block">Total Nutrition Energy</span>
+                        <span className="text-xs font-semibold text-slate-400 block">Total</span>
                         <div className="flex items-baseline gap-2">
                           <span className="text-4xl sm:text-5xl font-bold text-amber-300">
                             {analysisResult.total_calories}
@@ -749,25 +746,25 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                         ) : (
                           <Volume2 className="w-4 h-4 text-indigo-300 stroke-[3]" />
                         )}
-                        <span>{isSpeakingResult ? 'Stop Voice' : '🔊 Hear Nutrition'}</span>
+                        <span>{isSpeakingResult ? 'Stop' : 'Read aloud'}</span>
                       </button>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
                       <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <span className="block text-xs font-bold text-rose-400">🥩 Protein</span>
+                        <span className="block text-xs font-bold text-lilac-ink">Protein</span>
                         <span className="text-lg sm:text-xl font-bold text-white">
                           {analysisResult.total_macros.protein_g}g
                         </span>
                       </div>
                       <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <span className="block text-xs font-bold text-amber-400">🍞 Carbs</span>
+                        <span className="block text-xs font-bold text-butter-ink">Carbs</span>
                         <span className="text-lg sm:text-xl font-bold text-white">
                           {analysisResult.total_macros.carbs_g}g
                         </span>
                       </div>
                       <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <span className="block text-xs font-bold text-sky-400">🥑 Fat</span>
+                        <span className="block text-xs font-bold text-leaf-ink">Fat</span>
                         <span className="text-lg sm:text-xl font-bold text-white">
                           {analysisResult.total_macros.fat_g}g
                         </span>
@@ -783,10 +780,10 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                   <div>
                     <h4 className="text-sm font-bold text-white flex items-center gap-2">
                       <Sliders className="w-4 h-4 text-emerald-400" />
-                      Detected Plate Items &amp; Portion Override
+                      Items and portions
                     </h4>
                     <p className="text-xs text-slate-400">
-                      Adjust portions or weights below. Calories and macronutrients adjust automatically in real-time.
+                      Change a weight and the calories and macros update.
                     </p>
                   </div>
                   <button
@@ -857,7 +854,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
                       {/* Slider for smooth visual portion adjustment */}
                       <div className="mt-2.5 pt-2 border-t border-slate-900 flex items-center gap-3">
-                        <span className="text-[10px] text-slate-500 font-medium">Portion Scale:</span>
+                        <span className="text-[10px] text-slate-500 font-medium">Portion</span>
                         <input
                           type="range"
                           min="10"
@@ -879,13 +876,13 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
               </div>
 
               {/* Bottom Actions */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-between gap-3 pt-2">
                 <button
                   onClick={() => {
                     setAnalysisResult(null);
                     setCapturedImage(null);
                   }}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 h-14 rounded-full bg-slate-800 text-ink text-sm font-semibold transition-colors cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4" />
                   <span>Start over</span>
@@ -893,10 +890,12 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
                 <button
                   onClick={handleConfirmAndLog}
-                  className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-slate-950 text-base sm:text-lg font-bold shadow-xl shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-14 rounded-full btn-primary text-base font-semibold active:scale-95 transition-transform cursor-pointer"
                 >
-                  <Check className="w-6 h-6 stroke-[3]" />
-                  <span>Save to {mealType}</span>
+                  <Check className="w-5 h-5" strokeWidth={2.6} />
+                  <span>
+                    Add to {mealType.toLowerCase()} · {analysisResult.total_calories} kcal
+                  </span>
                 </button>
               </div>
             </div>
@@ -905,7 +904,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
             !isAnalyzing && (
               <div className="space-y-5">
                 {/* Ways to log food; AI ones are hidden when no AI server is reachable */}
-                <div role="tablist" className="flex gap-1.5 p-1.5 bg-slate-950/60 border border-slate-800 rounded-2xl overflow-x-auto no-scrollbar">
+                <div role="tablist" className="flex gap-1 p-1 bg-slate-800 rounded-full overflow-x-auto no-scrollbar">
                   {VISIBLE_TABS.map(({ id, label, icon: Icon }) => (
                     <button
                       key={id}
@@ -915,14 +914,14 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                         setActiveTab(id);
                         setErrorMessage(null);
                       }}
-                      className={`relative flex-1 min-w-[84px] py-2.5 px-3 text-xs sm:text-sm font-semibold rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1.5 transition-colors cursor-pointer min-h-[48px] ${
-                        activeTab === id ? 'text-emerald-300' : 'text-slate-400 hover:text-white'
+                      className={`relative flex-1 min-w-[96px] px-3 text-sm font-semibold rounded-full flex items-center justify-center gap-1.5 transition-colors cursor-pointer h-11 ${
+                        activeTab === id ? 'text-ink' : 'text-slate-400 hover:text-ink'
                       }`}
                     >
                       {activeTab === id && (
                         <motion.span
                           layoutId="scanner-tab"
-                          className="absolute inset-0 rounded-xl bg-slate-900 border border-slate-700 shadow-sm"
+                          className="absolute inset-0 rounded-full bg-slate-900 shadow-sm"
                           transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                         />
                       )}
@@ -941,7 +940,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                     }}
                   >
                     <div>
-                      <h4 className="text-base font-bold text-white">Enter what you ate</h4>
+                      <h3 className="font-display text-lg font-semibold text-ink">Enter what you ate</h3>
                       <p className="text-xs text-slate-400 mt-0.5">
                         Calories are required; macros are optional. Check the food's label or menu.
                       </p>
@@ -953,7 +952,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                         value={manual.name}
                         onChange={(e) => setManual({ ...manual, name: e.target.value })}
                         placeholder="e.g. Chicken biryani, 1 plate"
-                        className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 min-h-[48px]"
+                        className="w-full bg-slate-800 border-2 border-transparent rounded-2xl px-4 py-3 text-sm text-ink placeholder-slate-500 focus:outline-none focus:border-coral min-h-[52px]"
                       />
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -966,8 +965,13 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                         ] as const
                       ).map(([key, label, unit]) => (
                         <label key={key} className="block space-y-1.5">
-                          <span className="text-xs font-semibold text-slate-300">{label}</span>
-                          <div className="flex items-center bg-slate-950 border border-slate-700 rounded-xl focus-within:border-emerald-500">
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                            {key !== 'calories' && (
+                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: key === 'protein' ? '#8b6cf0' : key === 'carbs' ? '#f5b53f' : '#2fae78' }} />
+                            )}
+                            {label}
+                          </span>
+                          <div className={`flex items-center border-2 border-transparent rounded-2xl focus-within:border-coral ${key === 'calories' ? 'bg-peach' : 'bg-slate-800'}`}>
                             <input
                               required={key === 'calories'}
                               type="number"
@@ -977,7 +981,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                               step="any"
                               value={manual[key]}
                               onChange={(e) => setManual({ ...manual, [key]: e.target.value })}
-                              className="w-full min-w-0 bg-transparent px-3.5 py-3 text-sm text-white focus:outline-none min-h-[48px] tabular-nums"
+                              className="w-full min-w-0 bg-transparent px-4 py-3 num text-base font-semibold text-ink focus:outline-none min-h-[52px]"
                             />
                             <span className="pr-3 text-xs text-slate-400">{unit}</span>
                           </div>
@@ -986,10 +990,17 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                     </div>
                     <button
                       type="submit"
-                      className="w-full py-3.5 rounded-2xl bg-brand-lime on-brand font-bold text-sm active:scale-[0.98] transition-transform cursor-pointer min-h-[52px]"
+                      className="w-full rounded-full btn-primary font-semibold text-base active:scale-[0.98] transition-transform cursor-pointer min-h-[56px]"
                     >
                       Review and save
                     </button>
+                    {!AI_ENABLED && (
+                      <p className="flex items-center gap-2 text-xs text-slate-400">
+                        <Camera className="w-4 h-4 text-lilac-ink" />
+                        Snap your plate to log it automatically
+                        <span className="ml-auto px-2 py-0.5 rounded-full bg-lilac text-lilac-ink text-[10px] font-bold">SOON</span>
+                      </p>
+                    )}
                   </form>
                 )}
 
@@ -1269,7 +1280,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
             )
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

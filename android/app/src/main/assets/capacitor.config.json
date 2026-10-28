@@ -2,6 +2,7 @@
 	"appId": "com.nutristep.ai",
 	"appName": "NutriStep AI",
 	"webDir": "dist",
+	"backgroundColor": "#00000000",
 	"server": {
 		"androidScheme": "https",
 		"cleartext": true

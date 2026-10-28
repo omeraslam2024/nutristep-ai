@@ -23,7 +23,7 @@ function resolve(pref: ThemePref): ResolvedTheme {
 /** Sets data-theme on <html>, the browser theme colour and the Android status/navigation bar icons. */
 function apply(theme: ResolvedTheme): void {
   document.documentElement.dataset.theme = theme;
-  const bg = theme === 'dark' ? '#0b100d' : '#f4f6f0';
+  const bg = theme === 'dark' ? '#1b1521' : '#fff8f1';
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
   if (Capacitor.isNativePlatform()) {
     // DARK = light icons on a dark background.

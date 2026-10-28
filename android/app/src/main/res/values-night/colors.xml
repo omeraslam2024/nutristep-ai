@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Page background of the dark theme (slate-950 token). -->
-    <color name="app_background">#0B100D</color>
+    <color name="app_background">#1B1521</color>
 </resources>

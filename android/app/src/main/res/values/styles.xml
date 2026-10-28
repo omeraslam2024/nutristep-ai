@@ -4,8 +4,8 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/brand_leaf</item>
-        <item name="colorPrimaryDark">@color/brand_forest</item>
-        <item name="colorAccent">@color/brand_lime</item>
+        <item name="colorPrimaryDark">@color/brand_ink</item>
+        <item name="colorAccent">@color/brand_coral</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">

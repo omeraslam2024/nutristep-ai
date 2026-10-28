@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 12 140 216" width="140" height="216">
+  <!-- NutriStep "Leaf Step": a footprint whose sole is a leaf. Every step turns into food. -->
+  <circle cx="46" cy="58" r="15" fill="#FFFFFF"/>
+  <circle cx="80" cy="37" r="18" fill="#FFFFFF"/>
+  <circle cx="125" cy="49" r="21" fill="#FFFFFF"/>
+  <path d="M92 76 C72 85 47 101 47 131 C47 160 68 180 95 194 C121 180 138 160 138 129 C138 101 114 86 92 76 Z" fill="#FFFFFF"/>
+  <path d="M100 186 Q97 207 80 215" fill="none" stroke="#FFFFFF" stroke-width="13" stroke-linecap="round"/>
+</svg>

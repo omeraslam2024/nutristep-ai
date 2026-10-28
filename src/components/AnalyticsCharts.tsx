@@ -18,33 +18,35 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
   const [activeTab, setActiveTab] = useState<'calories' | 'steps' | 'macros' | 'weight'>('calories');
   const [newWeightInput, setNewWeightInput] = useState<string>(profile.weightKg.toString());
 
+  // "7-day" figures and charts use the last 7 days only, not the whole history.
+  const week = history.slice(-7);
   const targetCals = calculateTargetCalories(profile);
   const stepGoal = profile.stepGoal || 10000;
 
   // Compute averages
   const avgSteps = Math.round(
-    history.reduce((s, d) => s + d.steps, 0) / (history.length || 1)
+    week.reduce((s, d) => s + d.steps, 0) / (week.length || 1)
   );
   const avgCalsConsumed = Math.round(
-    history.reduce(
+    week.reduce(
       (s, d) => s + d.meals.reduce((ms, m) => ms + m.total_calories, 0),
       0
-    ) / (history.length || 1)
+    ) / (week.length || 1)
   );
   const avgActiveBurn = Math.round(
-    history.reduce((s, d) => s + d.caloriesBurned, 0) / (history.length || 1)
+    week.reduce((s, d) => s + d.caloriesBurned, 0) / (week.length || 1)
   );
 
   // Compute macro distribution across history
-  const totalP = history.reduce(
+  const totalP = week.reduce(
     (s, d) => s + d.meals.reduce((ms, m) => ms + m.total_macros.protein_g, 0),
     0
   );
-  const totalC = history.reduce(
+  const totalC = week.reduce(
     (s, d) => s + d.meals.reduce((ms, m) => ms + m.total_macros.carbs_g, 0),
     0
   );
-  const totalF = history.reduce(
+  const totalF = week.reduce(
     (s, d) => s + d.meals.reduce((ms, m) => ms + m.total_macros.fat_g, 0),
     0
   );
@@ -145,25 +147,22 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-300 font-bold flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-emerald-400" />
-                Calorie Intake vs Active Step Burn
+                <BarChart3 className="w-4 h-4 text-coral-ink" />
+                Eaten vs burned by steps
               </span>
-              <div className="flex items-center gap-3 text-[11px]">
-                <span className="flex items-center gap-1 text-amber-300">
-                  <span className="w-2.5 h-2.5 rounded bg-amber-400" /> Intake
+              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-coral" /> Eaten
                 </span>
-                <span className="flex items-center gap-1 text-cyan-300">
-                  <span className="w-2.5 h-2.5 rounded bg-cyan-400" /> Burned
-                </span>
-                <span className="flex items-center gap-1 text-slate-400">
-                  <span className="w-3 border-t border-dashed border-rose-400" /> Goal ({targetCals})
+                <span className="flex items-center gap-1">
+                  <span className="w-2.5 h-2.5 rounded-full bg-leaf" /> Burned
                 </span>
               </div>
             </div>
 
             {/* Visual Bar Graph */}
             <div className="h-44 flex items-end justify-between gap-2 pt-6 pb-2 border-b border-slate-800">
-              {history.map((day) => {
+              {week.map((day) => {
                 const dayIntake = day.meals.reduce((s, m) => s + m.total_calories, 0);
                 const dayBurn = day.caloriesBurned;
                 const maxVal = 2800;
@@ -178,14 +177,14 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
                     <span className="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold">
                       {dayIntake}k
                     </span>
-                    <div className="w-full flex items-end justify-center gap-1">
+                    <div className="w-full flex-1 min-h-0 flex items-end justify-center gap-1">
                       <div
-                        className="w-3 sm:w-4 bg-gradient-to-t from-amber-600 to-amber-400 rounded-t-sm"
+                        className="w-3 sm:w-4 bg-coral rounded-full"
                         style={{ height: `${intakeHeight}%` }}
                         title={`Intake: ${dayIntake} kcal`}
                       />
                       <div
-                        className="w-3 sm:w-4 bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-t-sm"
+                        className="w-3 sm:w-4 bg-leaf rounded-full"
                         style={{ height: `${burnHeight}%` }}
                         title={`Burned: +${dayBurn} kcal`}
                       />
@@ -209,7 +208,7 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
             </div>
 
             <div className="h-44 flex items-end justify-between gap-2 pt-6 pb-2 border-b border-slate-800">
-              {history.map((day) => {
+              {week.map((day) => {
                 const maxSteps = Math.max(stepGoal * 1.3, 14000);
                 const heightPct = Math.min(100, Math.round((day.steps / maxSteps) * 100));
                 const isOverGoal = day.steps >= stepGoal;
@@ -223,10 +222,8 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
                       {(day.steps / 1000).toFixed(1)}k
                     </span>
                     <div
-                      className={`w-full max-w-[28px] rounded-t-md transition-all ${
-                        isOverGoal
-                          ? 'bg-gradient-to-t from-emerald-600 to-teal-400'
-                          : 'bg-gradient-to-t from-cyan-700 to-cyan-500'
+                      className={`w-full max-w-[28px] rounded-full transition-all ${
+                        isOverGoal ? 'bg-leaf' : 'bg-[#a48df5]'
                       }`}
                       style={{ height: `${heightPct}%` }}
                     />
@@ -250,9 +247,9 @@ export const AnalyticsCharts: React.FC<AnalyticsChartsProps> = ({
 
             {/* Visual ratio bar */}
             <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex">
-              <div style={{ width: `${pRatio}%` }} className="bg-rose-500" title={`Protein: ${pRatio}%`} />
-              <div style={{ width: `${cRatio}%` }} className="bg-amber-400" title={`Carbs: ${cRatio}%`} />
-              <div style={{ width: `${fRatio}%` }} className="bg-sky-400" title={`Fat: ${fRatio}%`} />
+              <div style={{ width: `${pRatio}%` }} className="bg-[#8b6cf0]" title={`Protein: ${pRatio}%`} />
+              <div style={{ width: `${cRatio}%` }} className="bg-[#f5b53f]" title={`Carbs: ${cRatio}%`} />
+              <div style={{ width: `${fRatio}%` }} className="bg-leaf" title={`Fat: ${fRatio}%`} />
             </div>
 
             <div className="grid grid-cols-3 gap-3 pt-2">

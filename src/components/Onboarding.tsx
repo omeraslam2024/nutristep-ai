@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ArrowLeft, Footprints, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Footprints, ShieldCheck } from 'lucide-react';
 import { FitnessGoal, UserProfile } from '../types';
 import { calculateTargetCalories } from '../utils/healthCalculations';
 import { AI_ENABLED } from '../utils/features';
 import type { usePedometer } from '../utils/pedometer/usePedometer';
 import { CountUp, ProgressRing } from './ui/ProgressRing';
+import { ThaliIllustration } from './ui/ThaliIllustration';
 
 interface OnboardingProps {
   initial: UserProfile;
@@ -43,27 +44,38 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
       className="min-h-screen flex flex-col max-w-lg mx-auto px-5"
       style={{ paddingTop: 'max(env(safe-area-inset-top), 1.5rem)', paddingBottom: 'max(env(safe-area-inset-bottom), 1.5rem)' }}
     >
-      {/* Progress */}
+      {/* Header: brand on the welcome step, progress after it */}
       <div className="flex items-center gap-3 h-12">
-        {step > 0 && step < 3 ? (
-          <button
-            onClick={() => go(step - 1)}
-            aria-label="Back"
-            className="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-slate-300 cursor-pointer"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+        {step === 0 ? (
+          <div className="flex items-center gap-2">
+            <span className="w-9 h-9 rounded-xl bg-coral flex items-center justify-center p-1.5">
+              <img src="/icon-white.svg" alt="" className="w-full h-full" />
+            </span>
+            <span className="font-display text-xl font-semibold text-ink">NutriStep</span>
+          </div>
         ) : (
-          <span className="w-9" />
-        )}
-        <div className="flex-1 flex gap-1.5" aria-hidden="true">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-1.5 flex-1 rounded-full bg-slate-800 overflow-hidden">
-              <motion.div className="h-full bg-emerald-500" animate={{ width: i <= step ? '100%' : '0%' }} />
+          <>
+            {step < 3 ? (
+              <button
+                onClick={() => go(step - 1)}
+                aria-label="Back"
+                className="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-ink cursor-pointer"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            ) : (
+              <span className="w-9" />
+            )}
+            <div className="flex-1 flex gap-1.5" aria-hidden="true">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-2 flex-1 rounded-full bg-slate-800 overflow-hidden">
+                  <motion.div className="h-full bg-coral rounded-full" animate={{ width: i <= step ? '100%' : '0%' }} />
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-        <span className="w-9" />
+            <span className="w-9" />
+          </>
+        )}
       </div>
 
       <AnimatePresence mode="wait" custom={dir}>
@@ -77,24 +89,15 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
           className="flex-1 flex flex-col"
         >
           {step === 0 && (
-            <div className="flex-1 flex flex-col justify-center text-center">
-              <motion.div
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-                className="mx-auto w-32 h-32 rounded-[2.25rem] bg-[#ffffff] shadow-xl flex items-center justify-center p-4"
-              >
-                <img src="/icon.svg" alt="NutriStep" className="w-full h-full" />
-              </motion.div>
-              <h1 className="mt-10 text-4xl font-bold tracking-tight text-white leading-tight">
-                Snap your plate.
-                <br />
-                <span className="text-emerald-400">Walk it off.</span>
+            <div className="flex-1 flex flex-col justify-center">
+              <ThaliIllustration size={Math.min(300, typeof window !== 'undefined' ? window.innerWidth - 60 : 300)} />
+              <h1 className="mt-8 font-display text-[32px] leading-[1.15] font-semibold text-ink">
+                Every step earns you a little more to eat.
               </h1>
-              <p className="mt-4 text-base text-slate-400 leading-relaxed">
+              <p className="mt-3 text-base text-slate-400 leading-relaxed">
                 {AI_ENABLED
-                  ? 'A photo of your meal becomes calories in seconds, and every step you walk earns some back.'
-                  : 'Log meals in seconds, and every step you walk earns calories back into your day.'}
+                  ? 'Snap or log your meals. Walk, and NutriStep adds the calories you burn back to your day.'
+                  : 'Log meals in seconds. Walk, and NutriStep adds the calories you burn back to your day.'}
               </p>
             </div>
           )}
@@ -102,7 +105,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
           {step === 1 && (
             <div className="flex-1 pt-6 space-y-6">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-white">About you</h1>
+                <h1 className="font-display text-3xl font-semibold text-ink">About you</h1>
                 <p className="mt-2 text-sm text-slate-400">Used only on this phone to work out your daily calories.</p>
               </div>
               <Field label="First name">
@@ -143,7 +146,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
                       onClick={() => set('goal', g.id)}
                       aria-pressed={p.goal === g.id}
                       className={`rounded-2xl p-3 text-left border transition-colors cursor-pointer min-h-[76px] ${
-                        p.goal === g.id ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-900'
+                        p.goal === g.id ? 'border-coral bg-peach' : 'border-transparent bg-slate-900'
                       }`}
                     >
                       <span className="block text-sm font-bold text-white">{g.label}</span>
@@ -157,17 +160,17 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
 
           {step === 2 && (
             <div className="flex-1 flex flex-col justify-center text-center">
-              <div className="mx-auto w-24 h-24 rounded-[2rem] bg-cyan-500/15 flex items-center justify-center">
-                <Footprints className="w-11 h-11 text-cyan-400" />
+              <div className="mx-auto w-24 h-24 rounded-[2rem] bg-mint flex items-center justify-center">
+                <Footprints className="w-11 h-11 text-leaf-ink" />
               </div>
-              <h1 className="mt-8 text-3xl font-bold tracking-tight text-white">Count your steps automatically</h1>
+              <h1 className="mt-8 font-display text-3xl font-semibold text-ink">Count your steps automatically</h1>
               <p className="mt-3 text-base text-slate-400 leading-relaxed">
                 {pedometer.mode === 'hardware'
                   ? "NutriStep reads your phone's step sensor, so walking adds calories back to your day — even with the app closed."
                   : 'NutriStep counts your steps while the app is open, so walking adds calories back to your day.'}
               </p>
               <div className="mt-6 surface p-4 flex gap-3 text-left">
-                <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-5 h-5 text-leaf-ink shrink-0 mt-0.5" />
                 <p className="text-sm text-slate-300">
                   {pedometer.mode === 'hardware' ? (
                     <>
@@ -182,11 +185,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
 
           {step === 3 && (
             <div className="flex-1 flex flex-col justify-center items-center text-center">
-              <p className="text-sm font-semibold text-emerald-400">You're all set, {finished.name}</p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Your daily budget</h1>
+              <p className="text-sm font-semibold text-coral-ink">You're all set, {finished.name}</p>
+              <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Your daily budget</h1>
               <div className="mt-8">
-                <ProgressRing value={1} size={220} stroke={18} label="Daily calorie budget">
-                  <CountUp value={calculateTargetCalories(finished)} className="text-5xl font-bold text-white" />
+                <ProgressRing value={1} size={220} stroke={18} color="var(--coral)" track="var(--ring-track)" label="Daily calorie budget">
+                  <CountUp value={calculateTargetCalories(finished)} className="num text-5xl font-semibold text-ink" />
                   <span className="text-sm text-slate-400 mt-1">kcal a day</span>
                 </ProgressRing>
               </div>
@@ -200,7 +203,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
 
       {/* Actions */}
       <div className="pt-4 space-y-2">
-        {step === 0 && <Primary onClick={() => go(1)}>Get started</Primary>}
+        {step === 0 && <Primary onClick={() => go(1)}>Get started <ArrowRight className="w-5 h-5" /></Primary>}
         {step === 1 && (
           <Primary disabled={!aboutValid} onClick={() => go(2)}>
             Continue
@@ -228,7 +231,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ initial, pedometer, onDo
 };
 
 const inputCls =
-  'w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3.5 text-base text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 min-h-[52px]';
+  'w-full bg-slate-900 border-2 border-transparent rounded-2xl px-4 py-3.5 text-base text-white placeholder-slate-500 focus:outline-none focus:border-coral min-h-[52px]';
 
 /** `group` for button groups: a <label> would forward taps on its text to the first button. */
 const Field: React.FC<{ label: string; group?: boolean; children: React.ReactNode }> = ({ label, group, children }) =>
@@ -245,7 +248,7 @@ const Field: React.FC<{ label: string; group?: boolean; children: React.ReactNod
   );
 
 const NumberInput: React.FC<{ value: number; onChange: (v: number) => void; unit: string }> = ({ value, onChange, unit }) => (
-  <div className="flex items-center bg-slate-900 border border-slate-700 rounded-2xl focus-within:border-emerald-500">
+  <div className="flex items-center bg-slate-900 border-2 border-transparent rounded-2xl focus-within:border-coral">
     <input
       type="number"
       inputMode="decimal"
@@ -288,7 +291,7 @@ const Primary: React.FC<{ onClick: () => void; disabled?: boolean; children: Rea
   <button
     onClick={onClick}
     disabled={disabled}
-    className="w-full py-4 rounded-2xl bg-brand-lime on-brand font-bold text-base min-h-[56px] active:scale-[0.98] transition-all disabled:opacity-40 disabled:active:scale-100 cursor-pointer"
+    className="w-full py-4 rounded-full btn-primary font-semibold text-base min-h-[56px] flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-40 disabled:active:scale-100 cursor-pointer"
   >
     {children}
   </button>

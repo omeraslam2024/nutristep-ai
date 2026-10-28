@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { BarChart3, Camera, Flame, Footprints, House, UserRound } from 'lucide-react';
+import { BarChart3, Camera, Footprints, House, UserRound } from 'lucide-react';
 import { HomeView, defaultMealType } from './components/HomeView';
 import { StepsView } from './components/StepsView';
 import { ProfileView } from './components/ProfileView';
@@ -21,6 +21,7 @@ import { AI_ENABLED } from './utils/features';
 import { speakText } from './utils/speechHelper';
 import { renderShareCard } from './utils/shareCard';
 import { shareFile } from './utils/share';
+import { useBackToClose } from './utils/useBackToClose';
 
 type View = 'home' | 'steps' | 'reports' | 'profile';
 
@@ -37,6 +38,13 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [toast, setToast] = useState<{ text: string; action?: { label: string; run: () => void } } | null>(null);
+
+  // Android back: close the open sheet first, then return to Home, then leave the app.
+  useBackToClose(view !== 'home', () => setView('home'));
+  useBackToClose(isPlateScannerOpen, () => setIsPlateScannerOpen(false));
+  useBackToClose(isCoachOpen, () => setIsCoachOpen(false));
+  useBackToClose(isSettingsOpen, () => setIsSettingsOpen(false));
+  useBackToClose(isStreakModalOpen, () => setIsStreakModalOpen(false));
 
   useEffect(() => saveStoredProfile(profile), [profile]);
   useEffect(() => saveStoredHistory(history), [history]);
@@ -177,33 +185,11 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-950 text-white flex flex-col font-sans">
-      {/* Top bar */}
-      <header
-        className="sticky top-0 z-30 bg-slate-950/85 backdrop-blur-xl"
-        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 0.75rem)' }}
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-slate-950 text-ink flex flex-col font-sans">
+      <main
+        className="flex-1 max-w-6xl w-full mx-auto px-5 sm:px-6 pb-32 overflow-x-hidden"
+        style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 1.25rem)' }}
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
-          <button onClick={() => goTo('home')} className="flex items-center gap-2.5 cursor-pointer" aria-label="NutriStep home">
-            <span className="w-9 h-9 rounded-xl bg-[#ffffff] p-1 shadow-sm flex items-center justify-center">
-              <img src="/icon.svg" alt="" className="w-full h-full" />
-            </span>
-            <span className="text-lg font-bold tracking-tight">
-              Nutri<span className="text-emerald-400">Step</span>
-            </span>
-          </button>
-          <button
-            onClick={() => setIsStreakModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 h-9 rounded-full bg-amber-500/15 text-amber-400 text-sm font-bold cursor-pointer active:scale-95 transition-transform"
-            aria-label={`${streakInfo.currentStreak}-day streak, view details`}
-          >
-            <Flame className="w-4 h-4 fill-amber-400/40" />
-            <span className="tabular-nums">{streakInfo.currentStreak}</span>
-          </button>
-        </div>
-      </header>
-
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 pt-2 pb-32 overflow-x-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={view}
@@ -221,6 +207,7 @@ export default function App() {
                 onOpenScanner={openScanner}
                 onOpenSteps={() => goTo('steps')}
                 onOpenStreak={() => setIsStreakModalOpen(true)}
+                onOpenProfile={() => goTo('profile')}
                 onOpenCoach={() => askCoach(null)}
                 onShare={shareToday}
                 onSpeak={speakSummary}
@@ -243,11 +230,11 @@ export default function App() {
               />
             )}
             {view === 'reports' && (
-              <div className="space-y-5">
-                <div className="px-1">
+              <div className="space-y-4">
+                <header className="pt-1">
                   <p className="text-sm text-slate-400">Trends</p>
-                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">Reports</h2>
-                </div>
+                  <h1 className="font-display text-[28px] leading-tight font-semibold text-ink">Reports</h1>
+                </header>
                 <AnalyticsCharts history={history} profile={profile} onLogWeight={handleLogWeight} />
               </div>
             )}
@@ -269,23 +256,23 @@ export default function App() {
       {/* Bottom navigation — the same five destinations on every screen */}
       <nav
         aria-label="Main"
-        className="fixed bottom-0 inset-x-0 z-40 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800"
+        className="fixed bottom-0 inset-x-0 z-40 bg-slate-900 rounded-t-[1.75rem] shadow-[0_-8px_30px_-12px_rgb(80_40_20/0.25)]"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 0.5rem)' }}
       >
-        <div className="max-w-xl mx-auto grid grid-cols-5 items-end px-2 pt-1.5">
-          <NavItem icon={House} label="Home" active={view === 'home'} onClick={() => goTo('home')} />
-          <NavItem icon={Footprints} label="Steps" active={view === 'steps'} onClick={() => goTo('steps')} />
+        <div className="max-w-xl mx-auto grid grid-cols-5 items-end px-2 pt-2">
+          <NavItem icon={House} label="Home" active={view === 'home'} tint="bg-peach text-coral-ink" onClick={() => goTo('home')} />
+          <NavItem icon={Footprints} label="Steps" active={view === 'steps'} tint="bg-mint text-leaf-ink" onClick={() => goTo('steps')} />
           <div className="flex justify-center">
             <button
               onClick={() => openScanner(defaultMealType())}
               aria-label={AI_ENABLED ? 'Snap your plate' : 'Log food'}
-              className="-mt-7 w-16 h-16 rounded-[1.4rem] bg-brand-lime on-brand flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-slate-950 active:scale-90 transition-transform cursor-pointer"
+              className="-mt-8 w-16 h-16 rounded-[1.4rem] bg-coral text-[#ffffff] flex items-center justify-center shadow-lg shadow-[#ff7e5f]/40 active:scale-90 transition-transform cursor-pointer"
             >
               <Camera className="w-7 h-7" strokeWidth={2.4} />
             </button>
           </div>
-          <NavItem icon={BarChart3} label="Reports" active={view === 'reports'} onClick={() => goTo('reports')} />
-          <NavItem icon={UserRound} label="Profile" active={view === 'profile'} onClick={() => goTo('profile')} />
+          <NavItem icon={BarChart3} label="Reports" active={view === 'reports'} tint="bg-lilac text-lilac-ink" onClick={() => goTo('reports')} />
+          <NavItem icon={UserRound} label="Profile" active={view === 'profile'} tint="bg-butter text-butter-ink" onClick={() => goTo('profile')} />
         </div>
       </nav>
 
@@ -306,7 +293,7 @@ export default function App() {
                   toast.action!.run();
                   setToast(null);
                 }}
-                className="px-4 py-2 rounded-xl bg-brand-lime on-brand text-sm font-bold min-h-[44px] cursor-pointer"
+                className="px-4 py-2 rounded-xl btn-primary text-sm font-bold min-h-[44px] cursor-pointer"
               >
                 {toast.action.label}
               </button>
@@ -371,27 +358,30 @@ export default function App() {
   );
 }
 
-const NavItem: React.FC<{ icon: React.ElementType; label: string; active: boolean; onClick: () => void }> = ({
+const NavItem: React.FC<{ icon: React.ElementType; label: string; active: boolean; tint: string; onClick: () => void }> = ({
   icon: Icon,
   label,
   active,
+  tint,
   onClick,
 }) => (
   <button
     onClick={onClick}
     aria-current={active ? 'page' : undefined}
-    className={`relative flex flex-col items-center justify-center gap-1 h-14 rounded-2xl cursor-pointer transition-colors ${
-      active ? 'text-emerald-400' : 'text-slate-400 hover:text-white'
+    className={`relative flex flex-col items-center justify-center gap-1 h-14 cursor-pointer transition-colors ${
+      active ? 'text-ink' : 'text-slate-400'
     }`}
   >
-    {active && (
-      <motion.span
-        layoutId="nav-pill"
-        className="absolute top-1 w-12 h-8 rounded-full bg-emerald-500/15"
-        transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-      />
-    )}
-    <Icon className="relative w-[22px] h-[22px]" strokeWidth={active ? 2.4 : 2} />
-    <span className={`relative text-[11px] ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
+    <span className="relative w-12 h-8 flex items-center justify-center">
+      {active && (
+        <motion.span
+          layoutId="nav-pill"
+          className={`absolute inset-0 rounded-full ${tint.split(' ')[0]}`}
+          transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+        />
+      )}
+      <Icon className={`relative w-[22px] h-[22px] ${active ? tint.split(' ')[1] : ''}`} strokeWidth={active ? 2.4 : 2} />
+    </span>
+    <span className={`text-[11px] ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
   </button>
 );
