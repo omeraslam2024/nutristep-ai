@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand colours, Lassi palette (same values as src/index.css). -->
+    <color name="brand_coral">#FF7E5F</color>
+    <color name="brand_leaf">#2FAE78</color>
+    <color name="brand_ink">#2B2236</color>
+    <!-- Page background of the light theme (slate-950 token). -->
+    <color name="app_background">#FFF8F1</color>
+</resources>

@@ -1,25 +1,221 @@
 @import "tailwindcss";
 
+/*
+ * NutriStep design tokens — direction "Lassi" (Claude Design, 28 Oct 2026)
+ * ───────────────────────────────────────────────────────────────────────
+ * Cream base, pastel food colours, chunky rounded shapes. Fredoka for display and numbers,
+ * Figtree for UI text.
+ *
+ * Two layers:
+ * 1. Lassi colours as utilities: bg-coral, bg-peach, bg-mint, bg-lilac, bg-butter, bg-cloud,
+ *    text-leaf-ink, text-coral-ink, bg-btn / text-btn-fg … Each is re-pointed per theme on
+ *    <html data-theme>, so pastel tiles become deep tints in dark mode.
+ * 2. Tailwind's slate ramp re-pointed for the older screens and modals:
+ *    slate-950 page · slate-900 card · slate-800 inset/border · slate-400 secondary text ·
+ *    white = primary text ("ink"); emerald = leaf green.
+ *
+ * Contrast (WCAG AA): secondary text ≥ 4.5:1 on cards in both themes; accent *text* uses the
+ * -ink variants (leaf-ink, coral-ink), never the fill colours.
+ */
+
+@theme {
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fredoka Variable', 'Figtree Variable', ui-rounded, system-ui, sans-serif;
+
+  --radius-card: 1.75rem;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-coral: var(--coral);
+  --color-coral-ink: var(--coral-ink);
+  --color-peach: var(--peach);
+  --color-mint: var(--mint);
+  --color-leaf: var(--leaf);
+  --color-leaf-ink: var(--leaf-ink);
+  --color-lilac: var(--lilac);
+  --color-lilac-ink: var(--lilac-ink);
+  --color-butter: var(--butter);
+  --color-butter-ink: var(--butter-ink);
+  --color-cloud: var(--cloud);
+  --color-cloud-ink: var(--cloud-ink);
+  --color-cream: var(--cream);
+  --color-btn: var(--btn);
+  --color-btn-fg: var(--btn-fg);
+}
+
+/* ── Light (default) ──────────────────────────────────────────────────── */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --ink: #2b2236;
+  --cream: #fff8f1;
+  --coral: #ff7e5f;
+  --coral-ink: #c2462a;
+  --peach: #ffd6c2;
+  --mint: #c9efdb;
+  --leaf: #2fae78;
+  --leaf-ink: #1c7f55;
+  --lilac: #e2d8ff;
+  --lilac-ink: #6a4fd1;
+  --butter: #ffeaae;
+  --butter-ink: #8a5a00;
+  --cloud: #d2e9ff;
+  --cloud-ink: #2368b3;
+  --btn: #2b2236;
+  --btn-fg: #ffffff;
+  --ring-track: #f6e7db;
+
+  --color-slate-50: #2b2236;
+  --color-slate-100: #2b2236;
+  --color-slate-200: #3a3043;
+  --color-slate-300: #4a3f52;
+  --color-slate-400: #6b5f70;
+  --color-slate-500: #75697a;
+  --color-slate-600: #c9bbb0;
+  --color-slate-700: #eaddd0;
+  --color-slate-800: #f6ede4;
+  --color-slate-900: #ffffff;
+  --color-slate-950: #fff8f1;
+  --color-white: #2b2236;
+
+  --color-emerald-100: #1c7f55;
+  --color-emerald-200: #1c7f55;
+  --color-emerald-300: #1c7f55;
+  --color-emerald-400: #1c7f55;
+  --color-emerald-500: #2fae78;
+  --color-emerald-600: #23905f;
+  --color-emerald-700: #1c7f55;
+  --color-emerald-900: #e6f7ee;
+  --color-emerald-950: #eefaf3;
+  --color-teal-300: #1c7f55;
+  --color-teal-400: #2fae78;
+  --color-teal-500: #2fae78;
+
+  /* Accent text shades → 700 level; tinted backgrounds → 50/100 level */
+  --color-amber-200: oklch(55.5% 0.163 48.998);
+  --color-amber-300: oklch(55.5% 0.163 48.998);
+  --color-amber-400: oklch(55.5% 0.163 48.998);
+  --color-amber-950: oklch(98.7% 0.022 95.277);
+  --color-orange-400: oklch(55.3% 0.195 38.402);
+  --color-cyan-200: oklch(52% 0.105 223.128);
+  --color-cyan-300: oklch(52% 0.105 223.128);
+  --color-cyan-400: oklch(52% 0.105 223.128);
+  --color-sky-200: oklch(50% 0.134 242.749);
+  --color-sky-300: oklch(50% 0.134 242.749);
+  --color-sky-400: oklch(50% 0.134 242.749);
+  --color-blue-300: oklch(48.8% 0.243 264.376);
+  --color-indigo-200: oklch(45.7% 0.24 277.023);
+  --color-indigo-300: oklch(45.7% 0.24 277.023);
+  --color-indigo-400: oklch(45.7% 0.24 277.023);
+  --color-indigo-950: oklch(96.2% 0.018 272.314);
+  --color-purple-200: oklch(49.6% 0.265 301.924);
+  --color-purple-300: oklch(49.6% 0.265 301.924);
+  --color-purple-400: oklch(49.6% 0.265 301.924);
+  --color-purple-900: oklch(94.6% 0.033 307.174);
+  --color-purple-950: oklch(97.7% 0.014 308.299);
+  --color-rose-200: oklch(51.4% 0.222 16.935);
+  --color-rose-300: oklch(51.4% 0.222 16.935);
+  --color-rose-400: oklch(51.4% 0.222 16.935);
+  --color-rose-950: oklch(96.9% 0.015 12.422);
+
+  --app-shadow: 0 1px 2px rgb(43 34 54 / 0.04), 0 12px 32px -16px rgb(120 70 40 / 0.18);
+}
+
+/* ── Dark ─────────────────────────────────────────────────────────────── */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --ink: #fff8f1;
+  --cream: #1b1521;
+  --coral: #ff7e5f;
+  --coral-ink: #ff9c82;
+  --peach: #4a2f2b;
+  --mint: #1f3a2e;
+  --leaf: #3fc08a;
+  --leaf-ink: #7bddb0;
+  --lilac: #352c4d;
+  --lilac-ink: #c3b2ff;
+  --butter: #3d3320;
+  --butter-ink: #ffd76e;
+  --cloud: #1f3247;
+  --cloud-ink: #9ccbff;
+  --btn: #ffd6c2;
+  --btn-fg: #2b2236;
+  --ring-track: #3a2f42;
+
+  --color-slate-50: #fff8f1;
+  --color-slate-100: #f4eff6;
+  --color-slate-200: #e8e1ec;
+  --color-slate-300: #d6cddb;
+  --color-slate-400: #b7acbe;
+  --color-slate-500: #a093a8;
+  --color-slate-600: #5d5166;
+  --color-slate-700: #43384c;
+  --color-slate-800: #362c3e;
+  --color-slate-900: #2a2131;
+  --color-slate-950: #1b1521;
+  --color-white: #fff8f1;
+
+  --color-emerald-100: #c9efdb;
+  --color-emerald-200: #a6e6c6;
+  --color-emerald-300: #7bddb0;
+  --color-emerald-400: #7bddb0;
+  --color-emerald-500: #3fc08a;
+  --color-emerald-600: #2fae78;
+  --color-emerald-700: #23905f;
+  --color-emerald-900: #1f3a2e;
+  --color-emerald-950: #18302a;
+  --color-teal-300: #7bddb0;
+  --color-teal-400: #3fc08a;
+  --color-teal-500: #2fae78;
+
+  --app-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 12px 32px -16px rgb(0 0 0 / 0.6);
+}
+
 html,
 body {
-  background-color: #020617;
-  color: #f8fafc;
+  background-color: var(--color-slate-950);
+  color: var(--ink);
   width: 100%;
   max-width: 100vw;
   min-height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  transition: background-color 0.3s ease;
 }
 
 #root {
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
   min-height: 100vh;
-  background-color: #020617;
+  background-color: var(--color-slate-950);
+}
+
+/* Cards: white (light) / plum (dark), soft warm shadow, chunky radius. */
+.surface {
+  background-color: var(--color-slate-900);
+  border-radius: var(--radius-card);
+  box-shadow: var(--app-shadow);
+}
+
+/* Primary action: plum pill in light mode, peach pill in dark mode. */
+.btn-primary {
+  background-color: var(--btn);
+  color: var(--btn-fg);
+}
+
+/* Numbers and headings use the rounded display face with lining figures. */
+.num {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Custom scrollbar hiding helper */
@@ -29,4 +225,27 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 2px;
+}
+
+/* Text fields show focus with their own coral border, so no second outline around them. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

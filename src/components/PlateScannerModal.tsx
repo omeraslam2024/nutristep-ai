@@ -1,4 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { motion } from 'motion/react';
+import { apiUrl } from '../utils/api';
+import { QuickPicks } from './QuickPicks';
+import { FoodPick } from '../data/foods';
+import { AI_ENABLED } from '../utils/features';
+import { lookupBarcode } from '../utils/barcode';
 import {
   X,
   Camera,
@@ -19,6 +25,11 @@ import {
   Zap,
   Volume2,
   VolumeX,
+  Image as ImageIcon,
+  ScanBarcode,
+  PencilLine,
+  Salad,
+  ChevronDown,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LoggedMeal, MealItem, MealType, SamplePlate } from '../types';
@@ -32,7 +43,17 @@ interface PlateScannerModalProps {
   defaultMealType?: MealType;
 }
 
-type TabMode = 'camera' | 'upload' | 'samples' | 'voice_text' | 'barcode';
+type TabMode = 'camera' | 'upload' | 'samples' | 'voice_text' | 'barcode' | 'manual';
+
+const TABS: { id: TabMode; label: string; icon: React.ElementType; ai: boolean }[] = [
+  { id: 'camera', label: 'Camera', icon: Camera, ai: true },
+  { id: 'upload', label: 'Photo', icon: ImageIcon, ai: true },
+  { id: 'voice_text', label: 'Describe', icon: Mic, ai: true },
+  { id: 'samples', label: 'Quick picks', icon: Salad, ai: false },
+  { id: 'manual', label: 'Manual', icon: PencilLine, ai: false },
+  { id: 'barcode', label: 'Barcode', icon: ScanBarcode, ai: false },
+];
+const VISIBLE_TABS = TABS.filter((t) => AI_ENABLED || !t.ai);
 
 export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
   isOpen,
@@ -40,7 +61,8 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
   onMealLogged,
   defaultMealType = 'Lunch',
 }) => {
-  const [activeTab, setActiveTab] = useState<TabMode>('samples');
+  const [activeTab, setActiveTab] = useState<TabMode>(AI_ENABLED ? 'camera' : 'samples');
+  const [manual, setManual] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '' });
   const [mealType, setMealType] = useState<MealType>(defaultMealType);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -57,7 +79,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
   const recognitionRef = useRef<any>(null);
 
   // Barcode state
-  const [barcodeInput, setBarcodeInput] = useState<string>('737628064502'); // Example: Thai Kitchen Noodle or Nutella
+  const [barcodeInput, setBarcodeInput] = useState<string>('');
   const [barcodeLoading, setBarcodeLoading] = useState<boolean>(false);
   const [isSpeakingResult, setIsSpeakingResult] = useState<boolean>(false);
 
@@ -195,44 +217,46 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     reader.readAsDataURL(file);
   };
 
+  const handlePickFood = (food: FoodPick) => {
+    const item: MealItem = {
+      id: `pick-${Date.now()}`,
+      item_name: food.name,
+      estimated_weight_g: food.grams,
+      calories: food.kcal,
+      protein_g: food.protein,
+      carbs_g: food.carbs,
+      fat_g: food.fat,
+      fiber_g: 0,
+      sodium_mg: 0,
+      visual_clues: `${food.serving} · typical values`,
+    };
+    setAnalysisResult({
+      meal_name: food.name,
+      confidence_score: 0,
+      total_calories: food.kcal,
+      total_macros: { protein_g: food.protein, carbs_g: food.carbs, fat_g: food.fat, fiber_g: 0, sodium_mg: 0 },
+      detected_items: [item],
+      dietary_flags: [food.cuisine],
+      image_url: '',
+      source: 'sample',
+    });
+  };
+
   const handleSelectSample = (sample: SamplePlate) => {
     setCapturedImage(sample.image_url);
     setIsAnalyzing(true);
     setErrorMessage(null);
 
-    // Call server API, with graceful fallback to sample.fallbackData if Gemini key is testing/mocking
-    fetch('/api/analyze-plate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image: sample.image_url,
-        mealType,
-        notes: `Sample dish: ${sample.title}`,
-      }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          throw new Error('Server analysis error');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setupAnalysisState(data, sample.image_url, 'sample');
-      })
-      .catch((_err) => {
-        // High fidelity fallback ensures instant out-of-the-box delight
-        setupAnalysisState(sample.fallbackData, sample.image_url, 'sample');
-      })
-      .finally(() => {
-        setIsAnalyzing(false);
-      });
+    // Sample dishes carry their own curated nutrition data; they are labelled "Sample", not AI.
+    setupAnalysisState(sample.fallbackData, sample.image_url, 'sample');
+    setIsAnalyzing(false);
   };
 
   const sendImageForAnalysis = async (imageDataUrl: string, source: LoggedMeal['source']) => {
     setIsAnalyzing(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/analyze-plate', {
+      const res = await fetch(apiUrl('/api/analyze-plate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -268,7 +292,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     setErrorMessage(null);
 
     try {
-      const res = await fetch('/api/parse-meal-text', {
+      const res = await fetch(apiUrl('/api/parse-meal-text'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: textInput, mealType }),
@@ -281,7 +305,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
       const data = await res.json();
       setupAnalysisState(
         data,
-        'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=800&q=80',
+        '',
         'voice'
       );
     } catch (err: any) {
@@ -297,23 +321,17 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     setErrorMessage(null);
 
     try {
-      const res = await fetch(`/api/barcode-lookup/${encodeURIComponent(barcodeInput.trim())}`);
-      const data = await res.json();
-
-      if (!res.ok || !data.found) {
-        throw new Error(data.message || 'Barcode not found in OpenFoodFacts database.');
-      }
-
+      const data = await lookupBarcode(barcodeInput.trim());
       const item: MealItem = {
         id: `barcode-${Date.now()}`,
         item_name: `${data.product_name} (${data.brand})`,
         estimated_weight_g: 100,
-        calories: data.calories || 120,
-        protein_g: data.protein_g || 5,
-        carbs_g: data.carbs_g || 15,
-        fat_g: data.fat_g || 2,
-        fiber_g: data.fiber_g || 1,
-        sodium_mg: data.sodium_mg || 80,
+        calories: data.calories,
+        protein_g: data.protein_g,
+        carbs_g: data.carbs_g,
+        fat_g: data.fat_g,
+        fiber_g: data.fiber_g,
+        sodium_mg: data.sodium_mg,
         confidence: 0.99,
         visual_clues: `Verified Barcode: ${data.barcode} (${data.serving_size})`,
       };
@@ -332,9 +350,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
         detected_items: [item],
         dietary_flags: ['Packaged Food', 'Verified Nutrition Facts'],
         nutritionist_tip: `Verified via OpenFoodFacts barcode database for ${data.brand}.`,
-        image_url:
-          data.image_url ||
-          'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
+        image_url: data.image_url || '',
         source: 'barcode',
       });
     } catch (err: any) {
@@ -348,7 +364,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
     setIsAnalyzing(true);
     setErrorMessage(null);
     try {
-      const res = await fetch('/api/scan-nutrition-label', {
+      const res = await fetch(apiUrl('/api/scan-nutrition-label'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image: imageDataUrl }),
@@ -411,6 +427,35 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
         setIsListening(false);
       }
     }
+  };
+
+  const handleManualEntry = () => {
+    const num = (v: string) => Math.max(0, Math.round(Number(v || 0) * 10) / 10);
+    const calories = Math.round(num(manual.calories));
+    if (!manual.name.trim() || !calories) return;
+    const item: MealItem = {
+      id: `manual-${Date.now()}`,
+      item_name: manual.name.trim(),
+      estimated_weight_g: 100,
+      calories,
+      protein_g: num(manual.protein),
+      carbs_g: num(manual.carbs),
+      fat_g: num(manual.fat),
+      fiber_g: 0,
+      sodium_mg: 0,
+      visual_clues: 'Entered by you',
+    };
+    setAnalysisResult({
+      meal_name: item.item_name,
+      confidence_score: 0,
+      total_calories: calories,
+      total_macros: { protein_g: item.protein_g, carbs_g: item.carbs_g, fat_g: item.fat_g, fiber_g: 0, sodium_mg: 0 },
+      detected_items: [item],
+      dietary_flags: [],
+      image_url: '',
+      source: 'manual',
+    });
+    setManual({ name: '', calories: '', protein: '', carbs: '', fat: '' });
   };
 
   const setupAnalysisState = (data: any, imageUrl: string, source: LoggedMeal['source']) => {
@@ -550,7 +595,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
       particleCount: 50,
       spread: 60,
       origin: { y: 0.7 },
-      colors: ['#10b981', '#06b6d4', '#f59e0b'],
+      colors: ['#ff7e5f', '#2fae78', '#ffeaae', '#e2d8ff'],
     });
 
     // Reset and close
@@ -563,61 +608,57 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto"
-      style={{
-        paddingTop: 'max(env(safe-area-inset-top, 0px), 2rem)',
-        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 1rem)',
-      }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-5 bg-[#2b2236]/50 backdrop-blur-sm"
+      style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 1.5rem)' }}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-full flex flex-col shadow-2xl overflow-hidden my-auto">
-        {/* Modal Top Header */}
-        <div className="flex items-center justify-between px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-800 bg-slate-950/80 gap-2 shrink-0">
-          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 sm:p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all active:scale-95 cursor-pointer flex items-center gap-1 min-h-[48px] min-w-[48px] justify-center shrink-0"
-              title="Back to Home Dashboard"
-            >
-              <span className="text-emerald-400 font-black text-sm">← Back</span>
-            </button>
-
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-              <Camera className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-white text-sm sm:text-lg flex items-center gap-2 truncate">
-                <span>AI Food Plate Scanner</span>
-              </h3>
-              <p className="text-[11px] text-slate-400 truncate">Multimodal Gemini Vision</p>
-            </div>
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logfood-title"
+        className="bg-slate-900 w-full max-w-3xl max-h-full flex flex-col overflow-hidden rounded-t-[1.75rem] sm:rounded-[1.75rem] shadow-2xl"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <div className="mx-auto mt-2.5 h-1.5 w-12 rounded-full bg-slate-700 sm:hidden" aria-hidden="true" />
+        <div className="flex items-start justify-between px-5 pt-3 pb-3 gap-3 shrink-0">
+          <div className="min-w-0">
+            <h2 id="logfood-title" className="font-display text-[clamp(20px,6vw,24px)] font-semibold text-ink whitespace-nowrap">
+              Log food
+            </h2>
+            <p className="text-xs text-slate-400 truncate">
+              {mealType} · {new Date().toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}
+            </p>
           </div>
-
           <div className="flex items-center gap-2 shrink-0">
-            {/* Meal Type Selector */}
-            <select
-              value={mealType}
-              onChange={(e) => setMealType(e.target.value as MealType)}
-              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-lg px-2.5 py-2 focus:outline-none focus:border-emerald-500 min-h-[44px]"
-            >
-              <option value="Breakfast">Breakfast</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Dinner">Dinner</option>
-              <option value="Snack">Snack</option>
-            </select>
-
+            <label className="relative">
+              <span className="sr-only">Meal</span>
+              <select
+                value={mealType}
+                onChange={(e) => setMealType(e.target.value as MealType)}
+                className="appearance-none bg-butter text-butter-ink text-sm font-semibold rounded-full pl-4 pr-8 h-10 focus:outline-none focus:ring-2 focus:ring-coral cursor-pointer"
+              >
+                <option value="Breakfast">Breakfast</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Dinner">Dinner</option>
+                <option value="Snack">Snack</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-butter-ink" />
+            </label>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer min-h-[48px] min-w-[48px] flex items-center justify-center"
-              title="Close Scanner"
+              aria-label="Close"
+              className="w-10 h-10 rounded-full bg-slate-800 text-ink flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+        <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-5">
           {/* Error Banner if any */}
           {errorMessage && (
             <div className="bg-rose-950/40 border border-rose-800/80 rounded-xl p-3.5 flex items-start gap-3 text-rose-200 text-xs">
@@ -632,16 +673,16 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
           {isAnalyzing && (
             <div className="py-14 flex flex-col items-center justify-center text-center space-y-4">
               <div className="relative">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 animate-spin flex items-center justify-center p-1">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 animate-spin flex items-center justify-center p-1">
                   <div className="w-full h-full bg-slate-900 rounded-xl flex items-center justify-center">
                     <Sparkles className="w-7 h-7 text-emerald-400 animate-pulse" />
                   </div>
                 </div>
               </div>
               <div>
-                <h4 className="text-base font-bold text-white">Analyzing Food Plate...</h4>
+                <h4 className="text-base font-bold text-white">Reading your plate…</h4>
                 <p className="text-xs text-slate-400 max-w-sm mt-1">
-                  Gemini Computer Vision is detecting discrete food items, portion densities, and computing macros.
+                  Finding each food, estimating portions and adding up the nutrition.
                 </p>
               </div>
             </div>
@@ -649,21 +690,25 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
           {/* If Result Ready -> Show Module A Review & User Override UI */}
           {!isAnalyzing && analysisResult ? (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-6">
               {/* Review Header Card */}
               <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row gap-5">
                 {/* Image Preview with Detection Badge */}
-                <div className="relative w-full sm:w-44 h-40 sm:h-auto rounded-xl overflow-hidden shrink-0 border border-slate-800">
-                  <img
-                    src={analysisResult.image_url}
-                    alt={analysisResult.meal_name}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[11px] font-bold text-emerald-400 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    {Math.round(analysisResult.confidence_score * 100)}% Confidence
+                {analysisResult.image_url && (
+                  <div className="relative w-full sm:w-44 h-40 sm:h-auto rounded-xl overflow-hidden shrink-0 border border-slate-800">
+                    <img
+                      src={analysisResult.image_url}
+                      alt={analysisResult.meal_name}
+                      className="w-full h-full object-cover"
+                    />
+                    {['camera', 'upload', 'voice'].includes(analysisResult.source) && (
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-[#ffffff]/10 text-[11px] font-bold text-[#a6e07a] flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" />
+                        {Math.round(analysisResult.confidence_score * 100)}% confidence
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
 
                 {/* Macro Summary & Title */}
                 <div className="flex-1 flex flex-col justify-between">
@@ -703,9 +748,9 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                   <div className="mt-4 pt-3 border-t border-slate-800 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xs uppercase font-extrabold text-slate-400 block">Total Nutrition Energy</span>
+                        <span className="text-xs font-semibold text-slate-400 block">Total</span>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-4xl sm:text-5xl font-black text-amber-300">
+                          <span className="text-4xl sm:text-5xl font-bold text-amber-300">
                             {analysisResult.total_calories}
                           </span>
                           <span className="text-lg font-bold text-slate-300">Calories</span>
@@ -716,7 +761,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                       <button
                         type="button"
                         onClick={handleSpeakAnalysis}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border-2 text-xs sm:text-sm font-black transition-all active:scale-95 cursor-pointer shadow-md ${
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs sm:text-sm font-bold transition-all active:scale-95 cursor-pointer shadow-md ${
                           isSpeakingResult
                             ? 'bg-rose-500/30 border-rose-400 text-rose-200 animate-pulse'
                             : 'bg-indigo-600/30 hover:bg-indigo-600/40 border-indigo-400/50 text-indigo-200'
@@ -728,26 +773,26 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                         ) : (
                           <Volume2 className="w-4 h-4 text-indigo-300 stroke-[3]" />
                         )}
-                        <span>{isSpeakingResult ? 'Stop Voice' : '🔊 Hear Nutrition'}</span>
+                        <span>{isSpeakingResult ? 'Stop' : 'Read aloud'}</span>
                       </button>
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
                       <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <span className="block text-xs font-bold text-rose-400">🥩 Protein</span>
-                        <span className="text-lg sm:text-xl font-black text-white">
+                        <span className="block text-xs font-bold text-lilac-ink">Protein</span>
+                        <span className="text-lg sm:text-xl font-bold text-white">
                           {analysisResult.total_macros.protein_g}g
                         </span>
                       </div>
                       <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <span className="block text-xs font-bold text-amber-400">🍞 Carbs</span>
-                        <span className="text-lg sm:text-xl font-black text-white">
+                        <span className="block text-xs font-bold text-butter-ink">Carbs</span>
+                        <span className="text-lg sm:text-xl font-bold text-white">
                           {analysisResult.total_macros.carbs_g}g
                         </span>
                       </div>
                       <div className="text-center p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                        <span className="block text-xs font-bold text-sky-400">🥑 Fat</span>
-                        <span className="text-lg sm:text-xl font-black text-white">
+                        <span className="block text-xs font-bold text-leaf-ink">Fat</span>
+                        <span className="text-lg sm:text-xl font-bold text-white">
                           {analysisResult.total_macros.fat_g}g
                         </span>
                       </div>
@@ -762,10 +807,10 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                   <div>
                     <h4 className="text-sm font-bold text-white flex items-center gap-2">
                       <Sliders className="w-4 h-4 text-emerald-400" />
-                      Detected Plate Items &amp; Portion Override
+                      Items and portions
                     </h4>
                     <p className="text-xs text-slate-400">
-                      Adjust portions or weights below. Calories and macronutrients adjust automatically in real-time.
+                      Change a weight and the calories and macros update.
                     </p>
                   </div>
                   <button
@@ -836,11 +881,11 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
                       {/* Slider for smooth visual portion adjustment */}
                       <div className="mt-2.5 pt-2 border-t border-slate-900 flex items-center gap-3">
-                        <span className="text-[10px] text-slate-500 font-medium">Portion Scale:</span>
+                        <span className="text-[10px] text-slate-500 font-medium">Portion</span>
                         <input
                           type="range"
                           min="10"
-                          max="500"
+                          max="1000"
                           step="5"
                           value={item.estimated_weight_g}
                           onChange={(e) =>
@@ -858,24 +903,26 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
               </div>
 
               {/* Bottom Actions */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-between gap-3 pt-2">
                 <button
                   onClick={() => {
                     setAnalysisResult(null);
                     setCapturedImage(null);
                   }}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 h-14 rounded-full bg-slate-800 text-ink text-sm font-semibold transition-colors cursor-pointer"
                 >
                   <RefreshCw className="w-4 h-4" />
-                  <span>Scan Another Plate</span>
+                  <span>Start over</span>
                 </button>
 
                 <button
                   onClick={handleConfirmAndLog}
-                  className="flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-slate-950 text-base sm:text-lg font-black shadow-xl shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 h-14 rounded-full btn-primary text-base font-semibold active:scale-95 transition-transform cursor-pointer"
                 >
-                  <Check className="w-6 h-6 stroke-[3]" />
-                  <span>✅ SAVE FOOD TO {mealType.toUpperCase()}</span>
+                  <Check className="w-5 h-5" strokeWidth={2.6} />
+                  <span>
+                    Add to {mealType.toLowerCase()} · {analysisResult.total_calories} kcal
+                  </span>
                 </button>
               </div>
             </div>
@@ -883,120 +930,109 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
             /* Mode Selector Tabs */
             !isAnalyzing && (
               <div className="space-y-5">
-                {/* Tab Navigation - Big & Graphical */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1.5 bg-slate-950/80 border-2 border-slate-800 rounded-2xl">
-                  <button
-                    onClick={() => setActiveTab('samples')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      activeTab === 'samples'
-                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <span className="text-xl">🍲</span>
-                    <span>Sample Meals</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('camera')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      activeTab === 'camera'
-                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <span className="text-xl">📸</span>
-                    <span>Live Camera</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('upload')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      activeTab === 'upload'
-                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <span className="text-xl">🖼️</span>
-                    <span>Upload Photo</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('voice_text')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      activeTab === 'voice_text'
-                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <span className="text-xl">🎙️</span>
-                    <span>Speak Meal</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('barcode')}
-                    className={`py-3 px-3 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      activeTab === 'barcode'
-                        ? 'bg-emerald-500/25 text-emerald-300 border-2 border-emerald-500/50 shadow-md'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    <span className="text-xl">🏷️</span>
-                    <span>Barcode</span>
-                  </button>
+                {/* Ways to log food; AI ones are hidden when no AI server is reachable */}
+                <div role="tablist" className="flex gap-1 p-1 bg-slate-800 rounded-full overflow-x-auto no-scrollbar">
+                  {VISIBLE_TABS.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      role="tab"
+                      aria-selected={activeTab === id}
+                      onClick={() => {
+                        setActiveTab(id);
+                        setErrorMessage(null);
+                      }}
+                      className={`relative flex-1 min-w-[96px] px-3 text-sm font-semibold rounded-full flex items-center justify-center gap-1.5 transition-colors cursor-pointer h-11 ${
+                        activeTab === id ? 'text-ink' : 'text-slate-400 hover:text-ink'
+                      }`}
+                    >
+                      {activeTab === id && (
+                        <motion.span
+                          layoutId="scanner-tab"
+                          className="absolute inset-0 rounded-full bg-slate-900 shadow-sm"
+                          transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                        />
+                      )}
+                      <Icon className="relative w-4 h-4" />
+                      <span className="relative whitespace-nowrap">{label}</span>
+                    </button>
+                  ))}
                 </div>
 
-                {/* 1. Tab Content: Curated Sample Plates Gallery */}
-                {activeTab === 'samples' && (
-                  <div className="space-y-4">
+                {activeTab === 'manual' && (
+                  <form
+                    className="space-y-4"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleManualEntry();
+                    }}
+                  >
                     <div>
-                      <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-emerald-400" />
-                        Instant Test Gallery (Curated Realistic Plates)
-                      </h4>
-                      <p className="text-xs text-slate-400">
-                        Click any dish below to instantly trigger Gemini multimodal vision analysis, portion detection, and nutritional breakdown.
+                      <h3 className="font-display text-lg font-semibold text-ink">Enter what you ate</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Calories are required; macros are optional. Check the food's label or menu.
                       </p>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                      {SAMPLE_PLATES.map((sample) => (
-                        <div
-                          key={sample.id}
-                          onClick={() => handleSelectSample(sample)}
-                          className="group bg-slate-950/60 border border-slate-800 hover:border-emerald-500/50 rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-[1.01] hover:shadow-lg hover:shadow-emerald-500/10"
-                        >
-                          <div className="h-32 w-full overflow-hidden relative">
-                            <img
-                              src={sample.image_url}
-                              alt={sample.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    <label className="block space-y-1.5">
+                      <span className="text-xs font-semibold text-slate-300">Food</span>
+                      <input
+                        required
+                        value={manual.name}
+                        onChange={(e) => setManual({ ...manual, name: e.target.value })}
+                        placeholder="e.g. Chicken biryani, 1 plate"
+                        className="w-full bg-slate-800 border-2 border-transparent rounded-2xl px-4 py-3 text-sm text-ink placeholder-slate-500 focus:outline-none focus:border-coral min-h-[52px]"
+                      />
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {(
+                        [
+                          ['calories', 'Calories', 'kcal'],
+                          ['protein', 'Protein', 'g'],
+                          ['carbs', 'Carbs', 'g'],
+                          ['fat', 'Fat', 'g'],
+                        ] as const
+                      ).map(([key, label, unit]) => (
+                        <label key={key} className="block space-y-1.5">
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                            {key !== 'calories' && (
+                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: key === 'protein' ? '#8b6cf0' : key === 'carbs' ? '#f5b53f' : '#2fae78' }} />
+                            )}
+                            {label}
+                          </span>
+                          <div className={`flex items-center border-2 border-transparent rounded-2xl focus-within:border-coral ${key === 'calories' ? 'bg-peach' : 'bg-slate-800'}`}>
+                            <input
+                              required={key === 'calories'}
+                              type="number"
+                              inputMode="decimal"
+                              min="0"
+                              max={key === 'calories' ? 5000 : 500}
+                              step="any"
+                              value={manual[key]}
+                              onChange={(e) => setManual({ ...manual, [key]: e.target.value })}
+                              className="w-full min-w-0 bg-transparent px-4 py-3 num text-base font-semibold text-ink focus:outline-none min-h-[52px]"
                             />
-                            <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-md text-[10px] font-bold text-emerald-300">
-                              {sample.mealType}
-                            </div>
+                            <span className="pr-3 text-xs text-slate-400">{unit}</span>
                           </div>
-                          <div className="p-3">
-                            <h5 className="font-bold text-white text-sm group-hover:text-emerald-400 transition-colors">
-                              {sample.title}
-                            </h5>
-                            <p className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
-                              {sample.subtitle}
-                            </p>
-                            <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-900 text-xs">
-                              <span className="font-bold text-amber-300">
-                                ~{sample.fallbackData.total_calories} kcal
-                              </span>
-                              <span className="text-slate-400 text-[11px]">
-                                {sample.fallbackData.total_macros.protein_g}g Protein
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                        </label>
                       ))}
                     </div>
-                  </div>
+                    <button
+                      type="submit"
+                      className="w-full rounded-full btn-primary font-semibold text-base active:scale-[0.98] transition-transform cursor-pointer min-h-[56px]"
+                    >
+                      Review and save
+                    </button>
+                    {!AI_ENABLED && (
+                      <p className="flex items-center gap-2 text-xs text-slate-400">
+                        <Camera className="w-4 h-4 text-lilac-ink" />
+                        Snap your plate to log it automatically
+                        <span className="ml-auto px-2 py-0.5 rounded-full bg-lilac text-lilac-ink text-[10px] font-bold">SOON</span>
+                      </p>
+                    )}
+                  </form>
                 )}
+
+                {/* 1. Tab Content: Curated Sample Plates Gallery */}
+                {activeTab === 'samples' && <QuickPicks mealType={mealType} onPick={handlePickFood} />}
 
                 {/* 2. Tab Content: Live Camera Feed */}
                 {activeTab === 'camera' && (
@@ -1010,7 +1046,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                       />
 
                       {/* Viewfinder crosshairs / frame */}
-                      <div className="absolute inset-8 border border-white/20 rounded-xl pointer-events-none flex flex-col justify-between p-2">
+                      <div className="absolute inset-8 border border-[#ffffff]/20 rounded-xl pointer-events-none flex flex-col justify-between p-2">
                         <div className="flex justify-between">
                           <div className="w-4 h-4 border-t-2 border-l-2 border-emerald-400" />
                           <div className="w-4 h-4 border-t-2 border-r-2 border-emerald-400" />
@@ -1040,7 +1076,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
                         onClick={handleCapturePhoto}
                         className="w-16 h-16 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 p-1 shadow-lg shadow-emerald-500/30 flex items-center justify-center active:scale-95 transition-transform cursor-pointer"
                       >
-                        <div className="w-full h-full rounded-full border-2 border-slate-950 flex items-center justify-center">
+                        <div className="w-full h-full rounded-full border border-slate-950 flex items-center justify-center">
                           <Camera className="w-6 h-6 text-slate-950" />
                         </div>
                       </button>
@@ -1057,7 +1093,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
 
                 {/* 3. Tab Content: File Upload */}
                 {activeTab === 'upload' && (
-                  <div className="border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-colors bg-slate-950/40">
+                  <div className="border border-dashed border-slate-800 hover:border-emerald-500/50 rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-colors bg-slate-950/40">
                     <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-3">
                       <Upload className="w-6 h-6 text-emerald-400" />
                     </div>
@@ -1222,7 +1258,7 @@ export const PlateScannerModal: React.FC<PlateScannerModalProps> = ({
             )
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

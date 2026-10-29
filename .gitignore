@@ -10,3 +10,15 @@ coverage/
 .aistudio/
 public/assets/aistudio/
 android/app/src/main/assets/public/assets/aistudio/
+dev-dist/
+
+# Release signing (never commit)
+android/keystore.properties
+*.jks
+*.keystore
+release/
+/*.apk
+
+# Signing key folder kept inside the project (never commit)
+/nutristep/
+keystore.properties

@@ -1,4 +1,5 @@
 import { UserProfile, FitnessGoal, ActivityLevel, DayLog, LoggedMeal } from '../types';
+import { localDateKey } from './history';
 
 export const ACTIVITY_MULTIPLIERS: Record<ActivityLevel, number> = {
   sedentary: 1.2,
@@ -210,8 +211,28 @@ export function calculateStreakInfo(history: DayLog[], profile: UserProfile): St
 
   if (currentStreak > longestStreak) longestStreak = currentStreak;
 
-  // Past 7 days slice for week visualization
-  const past7Days = evaluatedDays.slice(-7);
+  // The last 7 calendar days; days before the first log show as missed.
+  const byDate = new Map(evaluatedDays.map((d) => [d.date, d]));
+  const past7Days: StreakDaySummary[] = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const date = localDateKey(d);
+    return (
+      byDate.get(date) ?? {
+        date,
+        dayLabel: d.toLocaleDateString('en-US', { weekday: 'narrow' }),
+        dayShort: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        steps: 0,
+        stepGoal,
+        stepMet: false,
+        caloriesConsumed: 0,
+        calorieTarget: targetCalories,
+        calMet: false,
+        bothMet: false,
+        isToday: i === 6,
+      }
+    );
+  });
 
   // Milestone badge
   let motivationalBadge = {

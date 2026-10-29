@@ -6,7 +6,7 @@ export const SAMPLE_PLATES: SamplePlate[] = [
     title: 'Grilled Salmon Quinoa Bowl',
     subtitle: 'Wild salmon, red quinoa, steamed broccoli & avocado',
     mealType: 'Lunch',
-    image_url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    image_url: '/samples/sample-1.webp',
     fallbackData: {
       meal_name: 'Grilled Salmon Quinoa Power Bowl',
       confidence_score: 0.94,
@@ -77,7 +77,7 @@ export const SAMPLE_PLATES: SamplePlate[] = [
     title: 'Avocado Toast & Boiled Eggs',
     subtitle: 'Artisan sourdough, smashed avocado & 2 farm eggs',
     mealType: 'Breakfast',
-    image_url: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80',
+    image_url: '/samples/sample-2.webp',
     fallbackData: {
       meal_name: 'Avocado Toast with Soft-Boiled Eggs',
       confidence_score: 0.96,
@@ -148,7 +148,7 @@ export const SAMPLE_PLATES: SamplePlate[] = [
     title: 'Grilled Flank Steak & Sweet Potato',
     subtitle: 'Lean beef steak, roasted sweet potato & grilled asparagus',
     mealType: 'Dinner',
-    image_url: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image_url: '/samples/sample-3.webp',
     fallbackData: {
       meal_name: 'Grilled Flank Steak with Roasted Sweet Potato',
       confidence_score: 0.93,
@@ -207,7 +207,7 @@ export const SAMPLE_PLATES: SamplePlate[] = [
     title: 'Greek Grilled Chicken Salad Bowl',
     subtitle: 'Herb chicken breast, cucumber, kalamata olives & feta',
     mealType: 'Lunch',
-    image_url: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80',
+    image_url: '/samples/sample-4.webp',
     fallbackData: {
       meal_name: 'Mediterranean Grilled Chicken Salad',
       confidence_score: 0.95,
@@ -278,7 +278,7 @@ export const SAMPLE_PLATES: SamplePlate[] = [
     title: 'Berry & Protein Chia Oatmeal',
     subtitle: 'Steel-cut oats, whey protein, fresh berries & seeds',
     mealType: 'Breakfast',
-    image_url: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=800&q=80',
+    image_url: '/samples/sample-5.webp',
     fallbackData: {
       meal_name: 'Antioxidant Berry Protein Oatmeal',
       confidence_score: 0.95,
@@ -346,21 +346,23 @@ export const SAMPLE_PLATES: SamplePlate[] = [
   },
 ];
 
+/** Starting values for the first-run setup; the user replaces them in onboarding. */
 export const DEFAULT_USER_PROFILE: UserProfile = {
-  name: 'Alex Rivera',
-  age: 28,
-  gender: 'male',
-  heightCm: 178,
-  weightKg: 76,
-  targetWeightKg: 72,
-  activityLevel: 'moderate',
+  name: '',
+  age: 30,
+  gender: 'female',
+  heightCm: 165,
+  weightKg: 70,
+  targetWeightKg: 65,
+  activityLevel: 'light',
   goal: 'lose_weight',
-  stepGoal: 10000,
+  stepGoal: 8000,
   waterTargetMl: 2500, // 2,500ml = 10 glasses of 250ml
   unitSystem: 'metric',
+  onboarded: false,
 };
 
-// Generates past 7 days of realistic history
+// The demo history earlier builds pre-filled; kept so stripSeedData() can be tested against it.
 export function generateInitialHistory(): DayLog[] {
   const logs: DayLog[] = [];
   const today = new Date();

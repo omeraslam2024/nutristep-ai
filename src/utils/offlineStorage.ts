@@ -1,5 +1,5 @@
 import { UserProfile, DayLog } from '../types';
-import { DEFAULT_USER_PROFILE, generateInitialHistory } from '../data/initialData';
+import { DEFAULT_USER_PROFILE } from '../data/initialData';
 
 const PROFILE_KEY = 'nutristep_profile_v1';
 const HISTORY_KEY = 'nutristep_history_v1';
@@ -12,6 +12,9 @@ export function loadStoredProfile(): UserProfile {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed.weightKg === 'number') {
+        // Profiles saved before onboarding existed: a real user's profile counts as set up; the old
+        // built-in demo person ("Alex Rivera") goes through setup.
+        if (parsed.onboarded === undefined) parsed.onboarded = parsed.name !== 'Alex Rivera';
         return parsed;
       }
     }
@@ -57,7 +60,8 @@ export function loadStoredHistory(): DayLog[] {
       }
     } catch {}
   }
-  return generateInitialHistory();
+  // A new install starts empty; App adds today's log.
+  return [];
 }
 
 export function saveStoredHistory(history: DayLog[]): void {

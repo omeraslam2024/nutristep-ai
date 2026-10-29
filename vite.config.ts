@@ -3,14 +3,20 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import pkg from './package.json';
 
 export default defineConfig(() => {
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(pkg.version),
+    },
     plugins: [
       react(),
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        // Registered from main.tsx, and only on the web: inside the APK the files are already local.
+        injectRegister: false,
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
         manifest: {
           id: '/',
@@ -18,8 +24,8 @@ export default defineConfig(() => {
           short_name: 'NutriStep',
           description:
             'AI-powered plate calorie estimator and daily movement tracker with multimodal Gemini computer vision, BMR/TDEE net energy balance, and personalized AI health coaching.',
-          theme_color: '#020617',
-          background_color: '#020617',
+          theme_color: '#1b1521',
+          background_color: '#1b1521',
           display: 'standalone',
           start_url: '/',
           scope: '/',
