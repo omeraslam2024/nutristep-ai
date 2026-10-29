@@ -11,7 +11,7 @@ Built 27 Oct 2026 from branch `review/full-pass`.
 | SHA-256 | `1dc34802821af2206d9e660520461b77603367b3192f1309db535d466d640fb2` |
 | Package / version | `com.nutristep.ai` · 1.3.0 (versionCode 130) |
 | SDK levels | minSdk 24 (Android 7.0) · targetSdk 36 · compileSdk 36 |
-| Signature | APK Signature Scheme v2, verified with `apksigner`; certificate `CN=NutriStep, O=NutriStep, C=PK`, SHA-256 `6c49c5db…c8f9b914`. Key: `D:\nutristep-keys\nutristep-release.jks` — **back it up** (see `docs/RELEASE.md`). |
+| Signature | APK Signature Scheme v2, verified with `apksigner`; certificate `CN=NutriStep, O=NutriStep, C=PK`, SHA-256 `6c49c5db…c8f9b914`. Key: `D:\nutristep\nutristep\nutristep-release.jks` — **back it up** (see `docs/RELEASE.md`). |
 | AI features | Hidden (built without `VITE_API_BASE`). |
 
 ## Pre-flight check

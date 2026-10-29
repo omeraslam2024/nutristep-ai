@@ -8,11 +8,11 @@
 
 ## Signing key
 
-Release builds are signed with `D:\nutristep-keys\nutristep-release.jks` (alias `nutristep`).
+Release builds are signed with `D:\nutristep\nutristep\nutristep-release.jks` (alias `nutristep`).
 Gradle reads its location and passwords from **`android/keystore.properties`**, which is git-ignored;
 a copy of that file sits next to the keystore.
 
-> **Back up `D:\nutristep-keys\` now** (both files) to somewhere safe outside this PC — a password manager
+> **Back up `D:\nutristep\nutristep\` now** (both files) to somewhere safe outside this PC — a password manager
 > or encrypted cloud storage. Every future update must be signed with the same key: if it is lost,
 > phones that installed this APK cannot update and must uninstall first. If you publish on Google Play
 > with Play App Signing, this key becomes your *upload* key and Google can reset it.
@@ -20,7 +20,7 @@ a copy of that file sits next to the keystore.
 Template for `android/keystore.properties`:
 
 ```properties
-storeFile=D:/nutristep-keys/nutristep-release.jks
+storeFile=D:/nutristep/nutristep/nutristep-release.jks
 storePassword=…
 keyAlias=nutristep
 keyPassword=…

@@ -18,3 +18,7 @@ android/keystore.properties
 *.keystore
 release/
 /*.apk
+
+# Signing key folder kept inside the project (never commit)
+/nutristep/
+keystore.properties
